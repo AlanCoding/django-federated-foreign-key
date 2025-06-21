@@ -1,6 +1,12 @@
 # django-federated-foreign-key
 A GenericForeignKey drop-in with ability to point to items in another server
 
+Install from source using `pip`:
+
+```bash
+pip install -e .
+```
+
 ## GenericForeignKey
 
 A generic foreign key allows pointing to objects of any type.
@@ -34,3 +40,15 @@ INSTALLED_APPS = [
 ```
 
 Use `FederatedForeignKey` in place of `GenericForeignKey` together with `GenericContentType`.
+
+### Development
+
+Install development requirements and run linting and tests:
+
+```bash
+pip install -r requirements-dev.txt
+ruff check .
+flake8
+PYTHONPATH=$PWD pytest -q
+```
+

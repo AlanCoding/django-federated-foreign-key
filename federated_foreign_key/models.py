@@ -10,18 +10,45 @@ def get_current_project_name():
 
 
 class GenericContentTypeManager(models.Manager):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._cache = None
+
+    def _get_cache(self):
+        if self._cache is None:
+            self._cache = {
+                (ct.project, ct.app_label, ct.model): ct
+                for ct in super().get_queryset().all()
+            }
+        return self._cache
+
+    def clear_cache(self):
+        self._cache = None
+
     def get_for_model(self, model, project=None):
         if project is None:
             project = get_current_project_name()
         opts = model._meta
-        return self.get_or_create(
+        key = (project, opts.app_label, opts.model_name)
+        cache = self._get_cache()
+        if key in cache:
+            return cache[key]
+        ct, _ = self.get_or_create(
             project=project,
             app_label=opts.app_label,
             model=opts.model_name,
-        )[0]
+        )
+        cache[key] = ct
+        return ct
 
     def get_by_natural_key(self, project, app_label, model):
-        return self.get(project=project, app_label=app_label, model=model)
+        key = (project, app_label, model)
+        cache = self._get_cache()
+        if key in cache:
+            return cache[key]
+        ct = self.get(project=project, app_label=app_label, model=model)
+        cache[key] = ct
+        return ct
 
 
 class GenericContentType(models.Model):

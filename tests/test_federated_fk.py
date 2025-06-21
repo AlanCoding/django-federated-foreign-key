@@ -1,5 +1,5 @@
 import pytest
-from django.conf import settings
+
 from federated_foreign_key.models import GenericContentType
 from tests.example_project.testapp.models import Book, Reference
 
@@ -17,7 +17,11 @@ def test_local_reference():
 def test_remote_reference():
     # simulate remote project
     remote_project = 'project_b'
-    ct = GenericContentType.objects.create(project=remote_project, app_label='testapp', model='book')
+    ct = GenericContentType.objects.create(
+        project=remote_project,
+        app_label="testapp",
+        model="book",
+    )
     ref = Reference.objects.create(content_type=ct, object_id=1)
     obj = ref.content_object
     from federated_foreign_key.fields import RemoteObject

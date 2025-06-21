@@ -15,7 +15,12 @@ class RemoteObject:
 
 
 class FederatedForeignKey(FieldCacheMixin, Field):
-    def __init__(self, ct_field="content_type", fk_field="object_id", for_concrete_model=True):
+    def __init__(
+        self,
+        ct_field="content_type",
+        fk_field="object_id",
+        for_concrete_model=True,
+    ):
         Field.__init__(self, editable=False)
         FieldCacheMixin.__init__(self)
         self.ct_field = ct_field
