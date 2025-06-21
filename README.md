@@ -1,6 +1,12 @@
 # django-federated-foreign-key
 A GenericForeignKey drop-in with ability to point to items in another server
 
+Install from source using `pip`:
+
+```bash
+pip install -e .
+```
+
 ## GenericForeignKey
 
 A generic foreign key allows pointing to objects of any type.
@@ -19,3 +25,30 @@ of the object, in the related table, in the same database.
 
 The intent of a federated foreign key is to provide the same interface,
 but expand this to allow referencing objects in different databases.
+
+## Usage
+
+Add `federated_foreign_key` to `INSTALLED_APPS` and define `FEDERATION_PROJECT_NAME` in your Django settings:
+
+```python
+FEDERATION_PROJECT_NAME = 'project_a'
+INSTALLED_APPS = [
+    'django.contrib.contenttypes',
+    'federated_foreign_key',
+    # your apps...
+]
+```
+
+Use `FederatedForeignKey` in place of `GenericForeignKey` together with `GenericContentType`.
+
+### Development
+
+Install development requirements and run linting and tests:
+
+```bash
+pip install -r requirements-dev.txt
+ruff check .
+flake8
+PYTHONPATH=$PWD pytest -q
+```
+
