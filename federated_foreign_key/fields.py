@@ -32,6 +32,9 @@ class FederatedForeignKey(FieldCacheMixin, Field):
     def cache_name(self):
         return self.name
 
+    def get_cache_name(self):
+        return self.cache_name
+
     def contribute_to_class(self, cls, name, **kwargs):
         super().contribute_to_class(cls, name, private_only=True, **kwargs)
         setattr(cls, self.attname, self)

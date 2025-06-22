@@ -50,6 +50,15 @@ class GenericContentTypeManager(models.Manager):
         cache[key] = ct
         return ct
 
+    def get_for_id(self, id):
+        cache = self._get_cache()
+        for ct in cache.values():
+            if ct.id == id:
+                return ct
+        ct = self.get(pk=id)
+        cache[(ct.project, ct.app_label, ct.model)] = ct
+        return ct
+
 
 class GenericContentType(models.Model):
     project = models.CharField(max_length=100)

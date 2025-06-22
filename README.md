@@ -41,6 +41,18 @@ INSTALLED_APPS = [
 
 Use `FederatedForeignKey` in place of `GenericForeignKey` together with `GenericContentType`.
 
+### Example
+
+```python
+from federated_foreign_key.fields import FederatedForeignKey
+from federated_foreign_key.models import GenericContentType
+
+class Reference(models.Model):
+    content_type = models.ForeignKey(GenericContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = FederatedForeignKey("content_type", "object_id")
+```
+
 ### Development
 
 Install development requirements and run linting and tests:

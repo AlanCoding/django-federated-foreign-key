@@ -7,9 +7,11 @@ pytestmark = pytest.mark.django_db
 
 
 def test_local_reference():
-    book = Book.objects.create(title='Django')
+    book = Book.objects.create(title="Django")
     ct = GenericContentType.objects.get_for_model(Book)
-    ref = Reference.objects.create(content_type=ct, object_id=book.pk)
+    Reference.objects.create(content_type=ct, object_id=book.pk)
+
+    ref = Reference.objects.get()
     assert isinstance(ref.content_object, Book)
     assert ref.content_object.pk == book.pk
 
