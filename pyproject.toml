@@ -8,6 +8,10 @@ dependencies = [
     "Django>=3.2",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["federated_foreign_key*"]
+
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
