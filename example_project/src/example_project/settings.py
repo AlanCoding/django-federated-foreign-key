@@ -2,7 +2,7 @@ SECRET_KEY = 'test'
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'federated_foreign_key',
-    'tests.example_project.testapp',
+    'example_project.testapp',
 ]
 DATABASES = {
     'default': {

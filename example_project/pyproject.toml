@@ -1,0 +1,12 @@
+[project]
+name = "example-project"
+version = "0.0.0"
+dependencies = ["Django>=3.2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["example_project*"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

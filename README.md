@@ -47,8 +47,10 @@ Install development requirements and run linting and tests:
 
 ```bash
 pip install -r requirements-dev.txt
+pip install -e .
+pip install -e example_project
 ruff check .
 flake8
-PYTHONPATH=$PWD pytest -q
+pytest -q
 ```
 
