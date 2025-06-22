@@ -27,7 +27,11 @@ class GenericContentTypeTests(TestCase):
         with self.assertNumQueries(0):
             GenericContentType.objects.get_for_id(ct.id)
         with self.assertNumQueries(0):
-            GenericContentType.objects.get_by_natural_key(ct.project, ct.app_label, ct.model)
+            GenericContentType.objects.get_by_natural_key(
+                ct.project,
+                ct.app_label,
+                ct.model,
+            )
         GenericContentType.objects.clear_cache()
         with self.assertNumQueries(1):
             GenericContentType.objects.get_for_model(Book)
@@ -43,4 +47,3 @@ class GenericContentTypeTests(TestCase):
         ct = GenericContentType.objects.get_for_model(ModelCreatedOnTheFly)
         assert ct.app_label == "tests"
         assert ct.model == "modelcreatedonthefly"
-
