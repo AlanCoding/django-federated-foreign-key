@@ -10,7 +10,13 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["federated_foreign_key*"]
+include = [
+    "federated_foreign_key*",
+    "contenttypes_tests*",
+    "empty_models*",
+    "no_models*",
+    "order_with_respect_to*",
+]
 
 [build-system]
 requires = ["setuptools>=61"]
