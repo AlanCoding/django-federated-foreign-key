@@ -1,6 +1,9 @@
+from collections import defaultdict
+
 from django.apps import apps
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 PROJECT_SETTING_NAME = 'FEDERATION_PROJECT_NAME'
 
@@ -25,6 +28,14 @@ class GenericContentTypeManager(models.Manager):
     def clear_cache(self):
         self._cache = None
 
+    def _get_opts(self, model, for_concrete_model=True):
+        if for_concrete_model:
+            model = model._meta.concrete_model
+        return model._meta
+
+    def _get_from_cache(self, key):
+        return self._get_cache()[key]
+
     def get_for_model(self, model, project=None):
         if project is None:
             project = get_current_project_name()
@@ -40,6 +51,44 @@ class GenericContentTypeManager(models.Manager):
         )
         cache[key] = ct
         return ct
+
+    def get_for_models(self, *models, for_concrete_models=True, project=None):
+        if project is None:
+            project = get_current_project_name()
+        results = {}
+        needed_models = defaultdict(set)
+        needed_opts = defaultdict(list)
+        for model in models:
+            opts = self._get_opts(model, for_concrete_models)
+            key = (project, opts.app_label, opts.model_name)
+            cache = self._get_cache()
+            if key in cache:
+                results[model] = cache[key]
+            else:
+                needed_models[opts.app_label].add(opts.model_name)
+                needed_opts[(opts.app_label, opts.model_name)].append(model)
+        if needed_opts:
+            condition = Q(
+                *(
+                    Q(("app_label", app_label), ("model__in", models))
+                    for app_label, models in needed_models.items()
+                ),
+                project=project,
+                _connector=Q.OR,
+            )
+            for ct in self.filter(condition):
+                opts_models = needed_opts.pop((ct.app_label, ct.model), [])
+                for model in opts_models:
+                    results[model] = ct
+                cache = self._get_cache()
+                cache[(ct.project, ct.app_label, ct.model)] = ct
+        for (app_label, model_name), opts_models in needed_opts.items():
+            ct = self.create(project=project, app_label=app_label, model=model_name)
+            cache = self._get_cache()
+            cache[(ct.project, ct.app_label, ct.model)] = ct
+            for model in opts_models:
+                results[model] = ct
+        return results
 
     def get_by_natural_key(self, project, app_label, model):
         key = (project, app_label, model)
@@ -73,7 +122,21 @@ class GenericContentType(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.project}:{self.app_label}.{self.model}"
+        return self.app_labeled_name
+
+    @property
+    def name(self):
+        model = self.model_class()
+        if not model:
+            return self.model
+        return str(model._meta.verbose_name)
+
+    @property
+    def app_labeled_name(self):
+        model = self.model_class()
+        if not model:
+            return self.model
+        return f"{model._meta.app_config.verbose_name} | {model._meta.verbose_name}"
 
     def model_class(self):
         if self.project not in ('shared', get_current_project_name()):
@@ -83,12 +146,12 @@ class GenericContentType(models.Model):
         except LookupError:
             return None
 
-    def get_object_for_this_type(self, **kwargs):
+    def get_object_for_this_type(self, using=None, **kwargs):
         model = self.model_class()
         if model is None:
             raise LookupError("Model not available in this project")
         try:
-            return model._base_manager.get(**kwargs)
+            return model._base_manager.using(using).get(**kwargs)
         except Exception as exc:
             # Mirror ContentType behavior by raising ValueError for invalid keys
             if isinstance(exc, (models.ObjectDoesNotExist, ValueError)):
@@ -98,6 +161,12 @@ class GenericContentType(models.Model):
             if isinstance(exc, ValidationError):
                 raise ValueError from exc
             raise
+
+    def get_all_objects_for_this_type(self, using=None, **kwargs):
+        model = self.model_class()
+        if model is None:
+            raise LookupError("Model not available in this project")
+        return model._base_manager.using(using).filter(**kwargs)
 
     def natural_key(self):
         return (self.project, self.app_label, self.model)
