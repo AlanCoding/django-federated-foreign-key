@@ -5,6 +5,8 @@ INSTALLED_APPS = [
     'federated_foreign_key',
     'example_project.testapp',
     'contenttypes_tests',
+    'empty_models',
+    'no_models',
     'django.contrib.sites',
 ]
 DATABASES = {

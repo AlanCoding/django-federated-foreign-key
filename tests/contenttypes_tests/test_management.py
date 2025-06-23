@@ -14,10 +14,11 @@ from .models import ModelWithNullFKToSite, Post
 class RemoveStaleContentTypesTests(TestCase):
     # Speed up tests by avoiding retrieving ContentTypes for all test apps.
     available_apps = [
-        "contenttypes_tests",
+        "tests.contenttypes_tests",
         "empty_models",
         "no_models",
         "django.contrib.contenttypes",
+        "federated_foreign_key",
     ]
 
     @classmethod

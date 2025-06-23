@@ -16,8 +16,9 @@ from django.test import TransactionTestCase, override_settings
 class ContentTypeOperationsTests(TransactionTestCase):
     databases = {"default", "other"}
     available_apps = [
-        "contenttypes_tests",
+        "tests.contenttypes_tests",
         "django.contrib.contenttypes",
+        "federated_foreign_key",
     ]
 
     class TestRouter:
