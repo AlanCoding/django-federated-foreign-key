@@ -2,7 +2,7 @@ from django.db import migrations
 
 
 def assert_foo_contenttype_not_cached(apps, schema_editor):
-    ContentType = apps.get_model("contenttypes", "ContentType")
+    ContentType = apps.get_model("federated_foreign_key", "GenericContentType")
     try:
         content_type = ContentType.objects.get_by_natural_key(
             "contenttypes_tests", "foo"

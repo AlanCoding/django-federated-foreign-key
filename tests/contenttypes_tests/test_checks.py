@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.contrib.contenttypes.checks import check_model_name_lengths
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
+from federated_foreign_key.models import GenericContentType as ContentType
 from django.core import checks
 from django.db import models
 from django.test import SimpleTestCase, override_settings
@@ -42,7 +42,7 @@ class GenericForeignKeyTests(SimpleTestCase):
                     "'Model.content_type' is not a ForeignKey.",
                     hint=(
                         "GenericForeignKeys must use a ForeignKey to "
-                        "'contenttypes.ContentType' as the 'content_type' field."
+                        "'federated_foreign_key.GenericContentType' as the 'content_type' field."
                     ),
                     obj=Model.content_object,
                     id="contenttypes.E003",
@@ -63,10 +63,10 @@ class GenericForeignKeyTests(SimpleTestCase):
             [
                 checks.Error(
                     "'Model.content_type' is not a ForeignKey to "
-                    "'contenttypes.ContentType'.",
+                    "'federated_foreign_key.GenericContentType'.",
                     hint=(
                         "GenericForeignKeys must use a ForeignKey to "
-                        "'contenttypes.ContentType' as the 'content_type' field."
+                        "'federated_foreign_key.GenericContentType' as the 'content_type' field."
                     ),
                     obj=Model.content_object,
                     id="contenttypes.E004",

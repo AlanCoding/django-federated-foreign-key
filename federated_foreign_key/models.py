@@ -87,7 +87,17 @@ class GenericContentType(models.Model):
         model = self.model_class()
         if model is None:
             raise LookupError("Model not available in this project")
-        return model._base_manager.get(**kwargs)
+        try:
+            return model._base_manager.get(**kwargs)
+        except Exception as exc:
+            # Mirror ContentType behavior by raising ValueError for invalid keys
+            if isinstance(exc, (models.ObjectDoesNotExist, ValueError)):
+                raise
+            from django.core.exceptions import ValidationError
+
+            if isinstance(exc, ValidationError):
+                raise ValueError from exc
+            raise
 
     def natural_key(self):
         return (self.project, self.app_label, self.model)

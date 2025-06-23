@@ -1,5 +1,6 @@
 from django.apps import apps
-from django.contrib.contenttypes.models import ContentType, ContentTypeManager
+from federated_foreign_key.models import GenericContentType as ContentType
+from django.contrib.contenttypes.models import ContentTypeManager
 from django.contrib.contenttypes.prefetch import GenericPrefetch
 from django.db import models
 from django.db.migrations.state import ModelState, ProjectState

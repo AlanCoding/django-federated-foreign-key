@@ -2,7 +2,7 @@ import uuid
 from urllib.parse import quote
 
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
+from federated_foreign_key.models import GenericContentType as ContentType
 from django.contrib.sites.models import SiteManager
 from django.db import models
 
