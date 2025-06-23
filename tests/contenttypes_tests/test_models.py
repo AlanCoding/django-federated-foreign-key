@@ -1,11 +1,12 @@
 from django.apps import apps
-from federated_foreign_key.models import GenericContentType as ContentType
 from django.contrib.contenttypes.models import ContentTypeManager
 from django.contrib.contenttypes.prefetch import GenericPrefetch
 from django.db import models
 from django.db.migrations.state import ModelState, ProjectState
 from django.test import TestCase, override_settings
 from django.test.utils import isolate_apps
+
+from federated_foreign_key.models import GenericContentType as ContentType
 
 from .models import Author, ConcreteModel, FooWithUrl, ProxyModel
 

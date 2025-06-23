@@ -1,7 +1,7 @@
 import pytest
 
-from federated_foreign_key.models import GenericContentType
 from example_project.testapp.models import Book, Reference
+from federated_foreign_key.models import GenericContentType
 
 pytestmark = pytest.mark.django_db
 

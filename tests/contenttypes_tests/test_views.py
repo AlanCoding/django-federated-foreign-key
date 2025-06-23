@@ -1,12 +1,13 @@
 import datetime
 from unittest import mock
 
-from federated_foreign_key.models import GenericContentType as ContentType
 from django.contrib.contenttypes.views import shortcut
 from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpRequest
 from django.test import TestCase, override_settings
+
+from federated_foreign_key.models import GenericContentType as ContentType
 
 from .models import (
     Article,
@@ -17,9 +18,9 @@ from .models import (
     ModelWithM2MToSite,
     ModelWithNullFKToSite,
     SchemeIncludedURL,
+    UUIDModel,
 )
 from .models import Site as MockSite
-from .models import UUIDModel
 
 
 @override_settings(ROOT_URLCONF="contenttypes_tests.urls")

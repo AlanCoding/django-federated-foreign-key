@@ -2,9 +2,10 @@ from importlib import import_module
 
 from django.apps import apps
 from django.contrib.auth.models import Permission
-from federated_foreign_key.models import GenericContentType as ContentType
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.test import TransactionTestCase
+
+from federated_foreign_key.models import GenericContentType as ContentType
 
 remove_content_type_name = import_module(
     "django.contrib.contenttypes.migrations.0002_remove_content_type_name"

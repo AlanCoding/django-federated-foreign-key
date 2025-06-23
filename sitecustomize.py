@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
 EXAMPLE_SRC = REPO_ROOT / "example_project" / "src"

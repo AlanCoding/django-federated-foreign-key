@@ -2,11 +2,12 @@ from unittest import mock
 
 from django.contrib.contenttypes.checks import check_model_name_lengths
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from federated_foreign_key.models import GenericContentType as ContentType
 from django.core import checks
 from django.db import models
 from django.test import SimpleTestCase, override_settings
 from django.test.utils import isolate_apps
+
+from federated_foreign_key.models import GenericContentType as ContentType
 
 
 @isolate_apps("contenttypes_tests", attr_name="apps")

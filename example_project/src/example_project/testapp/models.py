@@ -1,4 +1,5 @@
 from django.db import models
+
 from federated_foreign_key.fields import FederatedForeignKey
 from federated_foreign_key.models import GenericContentType
 

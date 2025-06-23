@@ -1,5 +1,5 @@
-from django.conf import settings
 from django.apps import apps
+from django.conf import settings
 from django.db import models
 
 PROJECT_SETTING_NAME = 'FEDERATION_PROJECT_NAME'

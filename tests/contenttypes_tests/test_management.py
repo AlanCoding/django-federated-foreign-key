@@ -2,10 +2,11 @@ from unittest import mock
 
 from django.apps.registry import Apps, apps
 from django.contrib.contenttypes import management as contenttypes_management
-from federated_foreign_key.models import GenericContentType as ContentType
 from django.core.management import call_command
 from django.test import TestCase, modify_settings
 from django.test.utils import captured_stdout
+
+from federated_foreign_key.models import GenericContentType as ContentType
 
 from .models import ModelWithNullFKToSite, Post
 

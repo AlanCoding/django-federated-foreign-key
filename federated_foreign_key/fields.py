@@ -1,6 +1,6 @@
-from django.db.models.fields.mixins import FieldCacheMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Field
+from django.db.models.fields.mixins import FieldCacheMixin
 
 from .models import GenericContentType, get_current_project_name
 
