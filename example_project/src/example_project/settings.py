@@ -3,6 +3,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'federated_foreign_key',
     'example_project.testapp',
+    'django.contrib.sites.models.Site',
 ]
 DATABASES = {
     'default': {
