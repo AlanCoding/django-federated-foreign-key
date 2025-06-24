@@ -19,7 +19,9 @@ from django.db.models.sql.where import WhereNode
 from django.db.models.utils import AltersData
 from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
-from django.contrib.contenttypes.fields import GenericForeignKey as DjangoGenericForeignKey
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey as DjangoGenericForeignKey,
+)
 
 from .models import GenericContentType, get_current_project_name
 
@@ -49,13 +51,16 @@ class RemoteObject:
 
 class FederatedForeignKey(DjangoGenericForeignKey):
     """A GenericForeignKey variant aware of project boundaries."""
+
     def __init__(
         self,
         ct_field="content_type",
         fk_field="object_id",
         for_concrete_model=True,
     ):
-        super().__init__(ct_field=ct_field, fk_field=fk_field, for_concrete_model=for_concrete_model)
+        super().__init__(
+            ct_field=ct_field, fk_field=fk_field, for_concrete_model=for_concrete_model
+        )
 
     def _check_content_type_field(self):
         try:
@@ -73,7 +78,8 @@ class FederatedForeignKey(DjangoGenericForeignKey):
             if not isinstance(field, models.ForeignKey):
                 return [
                     checks.Error(
-                        "'%s.%s' is not a ForeignKey." % (self.model._meta.object_name, self.ct_field),
+                        "'%s.%s' is not a ForeignKey."
+                        % (self.model._meta.object_name, self.ct_field),
                         hint=(
                             "GenericForeignKeys must use a ForeignKey to "
                             "'federated_foreign_key.GenericContentType' as the "
@@ -142,7 +148,14 @@ class FederatedForeignKey(DjangoGenericForeignKey):
 
 
 class FederatedRel(ForeignObjectRel):
-    def __init__(self, field, to, related_name=None, related_query_name=None, limit_choices_to=None):
+    def __init__(
+        self,
+        field,
+        to,
+        related_name=None,
+        related_query_name=None,
+        limit_choices_to=None,
+    ):
         super().__init__(
             field,
             to,
@@ -321,8 +334,11 @@ class FederatedRelation(ForeignObject):
         setattr(cls, self.name, ReverseFederatedManyToOneDescriptor(self.remote_field))
 
         if not cls._meta.abstract:
+
             def make_generic_foreign_order_accessors(related_model, model):
-                if self._is_matching_generic_foreign_key(model._meta.order_with_respect_to):
+                if self._is_matching_generic_foreign_key(
+                    model._meta.order_with_respect_to
+                ):
                     make_foreign_order_accessors(model, related_model)
 
             lazy_related_operation(
@@ -351,7 +367,9 @@ class FederatedRelation(ForeignObject):
     def bulk_related_objects(self, objs, using=DEFAULT_DB_ALIAS):
         return self.remote_field.model._base_manager.db_manager(using).filter(
             **{
-                f"{self.content_type_field_name}__pk": GenericContentType.objects.db_manager(using)
+                f"{self.content_type_field_name}__pk": GenericContentType.objects.db_manager(
+                    using
+                )
                 .get_for_model(self.model, for_concrete_model=self.for_concrete_model)
                 .pk,
                 f"{self.object_id_field_name}__in": [obj.pk for obj in objs],
@@ -457,7 +475,8 @@ def create_federated_related_manager(superclass, rel):
             def check_and_update_obj(obj):
                 if not isinstance(obj, self.model):
                     raise TypeError(
-                        "'%s' instance expected, got %r" % (self.model._meta.object_name, obj)
+                        "'%s' instance expected, got %r"
+                        % (self.model._meta.object_name, obj)
                     )
                 setattr(obj, self.content_type_field_name, self.content_type)
                 setattr(obj, self.object_id_field_name, self.pk_val)
@@ -467,7 +486,8 @@ def create_federated_related_manager(superclass, rel):
                 for obj in objs:
                     if obj._state.adding or obj._state.db != db:
                         raise ValueError(
-                            "%r instance isn't saved. Use bulk=False or save the object first." % obj
+                            "%r instance isn't saved. Use bulk=False or save the object first."
+                            % obj
                         )
                     check_and_update_obj(obj)
                     pks.append(obj.pk)

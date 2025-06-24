@@ -31,9 +31,12 @@ else:
 try:
     from django.utils.deprecation import RemovedInDjango61Warning
 except ImportError:  # Django < 6.1
-    from django.utils.deprecation import RemovedInDjango51Warning as RemovedInDjango61Warning
+    from django.utils.deprecation import (
+        RemovedInDjango51Warning as RemovedInDjango61Warning,
+    )
 from django.utils.functional import classproperty
 from django.utils.log import DEFAULT_LOGGING
+
 try:
     from django.utils.version import PYPY
 except ImportError:  # Django >= 5.0 removed this constant

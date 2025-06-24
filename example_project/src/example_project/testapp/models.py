@@ -11,6 +11,7 @@ class Book(models.Model):
 
 class Reference(models.Model):
     """Model holding a federated relation to any object."""
+
     content_type = models.ForeignKey(
         GenericContentType,
         on_delete=models.CASCADE,
