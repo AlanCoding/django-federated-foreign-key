@@ -28,12 +28,13 @@ else:
     from django.test.runner import get_max_test_processes, parallel_type
     from django.test.selenium import SeleniumTestCase, SeleniumTestCaseBase
     from django.test.utils import NullTimeKeeper, TimeKeeper, get_runner
-    from django.utils.deprecation import (
-        RemovedInDjango61Warning,
-    )
-    from django.utils.functional import classproperty
-    from django.utils.log import DEFAULT_LOGGING
-    from django.utils.version import PYPY
+try:
+    from django.utils.deprecation import RemovedInDjango61Warning
+except ImportError:  # Django < 6.1
+    from django.utils.deprecation import RemovedInDjango51Warning as RemovedInDjango61Warning
+from django.utils.functional import classproperty
+from django.utils.log import DEFAULT_LOGGING
+from django.utils.version import PYPY
 
 
 try:
@@ -86,6 +87,7 @@ SUBDIRS_TO_SKIP = {
 
 ALWAYS_INSTALLED_APPS = [
     "django.contrib.contenttypes",
+    "federated_foreign_key",
     "django.contrib.auth",
     "django.contrib.sites",
     "django.contrib.sessions",

@@ -2,7 +2,7 @@ import datetime
 from unittest import mock
 import django
 
-from django.contrib.contenttypes.models import ContentType
+from federated_foreign_key.models import GenericContentType as ContentType
 from django.contrib.contenttypes.views import shortcut
 from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
