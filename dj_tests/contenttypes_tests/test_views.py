@@ -1,5 +1,6 @@
 import datetime
-from unittest import mock
+from unittest import mock, skipUnless
+import django
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.views import shortcut
@@ -266,6 +267,8 @@ class ShortcutViewTests(TestCase):
             shortcut(self.request, user_ct.id, obj.id)
 
     def test_invalid_uuid_pk_raises_404(self):
+        if django.VERSION < (5, 3):
+            self.skipTest("Django < 5.3 does not convert invalid UUID pk to Http404")
         content_type = ContentType.objects.get_for_model(UUIDModel)
         invalid_uuid = "1234-zzzz-5678-0000-invaliduuid"
         with self.assertRaisesMessage(

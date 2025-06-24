@@ -4,6 +4,9 @@ reference any models directly. Subclasses should inherit django.test.TestCase.
 """
 
 from operator import attrgetter
+from unittest import skipUnless
+
+import django
 
 
 class BaseOrderWithRespectToTests:
@@ -127,6 +130,7 @@ class BaseOrderWithRespectToTests:
             ):
                 self.q1.set_answer_order([3, 1, 2, 4])
 
+    @skipUnless(django.VERSION >= (5, 3), "bulk_create order population added in Django >= 5.3")
     def test_bulk_create_with_empty_parent(self):
         """
         bulk_create() should properly set _order when parent has no existing children.
@@ -139,6 +143,7 @@ class BaseOrderWithRespectToTests:
         self.assertEqual(answer1._order, 1)
         self.assertEqual(answer2._order, 2)
 
+    @skipUnless(django.VERSION >= (5, 3), "bulk_create order population added in Django >= 5.3")
     def test_bulk_create_with_existing_children(self):
         """
         bulk_create() should continue _order sequence from existing children.
@@ -155,6 +160,7 @@ class BaseOrderWithRespectToTests:
         self.assertEqual(answer2._order, 2)
         self.assertEqual(answer3._order, 3)
 
+    @skipUnless(django.VERSION >= (5, 3), "bulk_create order population added in Django >= 5.3")
     def test_bulk_create_multiple_parents(self):
         """
         bulk_create() should maintain separate _order sequences for different parents.
@@ -176,6 +182,7 @@ class BaseOrderWithRespectToTests:
         self.assertEqual(answer_q1_0._order, 0)
         self.assertEqual(answer_q1_1._order, 1)
 
+    @skipUnless(django.VERSION >= (5, 3), "bulk_create order population added in Django >= 5.3")
     def test_bulk_create_mixed_scenario(self):
         """
         The _order field should be correctly set for new Answer objects based
@@ -199,6 +206,7 @@ class BaseOrderWithRespectToTests:
         self.assertEqual(answer_q0_1._order, 1)
         self.assertEqual(answer_q1_2._order, 2)
 
+    @skipUnless(django.VERSION >= (5, 3), "bulk_create order population added in Django >= 5.3")
     def test_bulk_create_respects_mixed_manual_order(self):
         """
         bulk_create() should assign _order automatically only for instances
@@ -242,6 +250,7 @@ class BaseOrderWithRespectToTests:
         self.assertEqual(qb_auto_2._order, 2)
         self.assertEqual(qb_auto_3._order, 3)
 
+    @skipUnless(django.VERSION >= (5, 3), "bulk_create duplicates supported in Django >= 5.3")
     def test_bulk_create_allows_duplicate_order_values(self):
         """
         bulk_create() should allow duplicate _order values if the model
