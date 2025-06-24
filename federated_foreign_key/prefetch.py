@@ -37,4 +37,9 @@ class FederatedPrefetch(Prefetch):
 
 
 class GenericPrefetch(FederatedPrefetch):
-    pass
+    def __init__(self, lookup, querysets=None, to_attr=None):
+        if querysets is None:
+            raise TypeError(
+                "GenericPrefetch.__init__() missing 1 required positional argument: 'querysets'"
+            )
+        super().__init__(lookup, querysets, to_attr=to_attr)
