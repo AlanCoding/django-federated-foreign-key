@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("project", models.CharField(max_length=100)),
+                ("project", models.CharField(max_length=100, default="default")),
                 ("app_label", models.CharField(max_length=100)),
                 ("model", models.CharField(max_length=100)),
             ],
