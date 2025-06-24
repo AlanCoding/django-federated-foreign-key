@@ -3,7 +3,11 @@ from django.db.models.query import ModelIterable, RawQuerySet
 
 
 class FederatedPrefetch(Prefetch):
-    def __init__(self, lookup, querysets, to_attr=None):
+    def __init__(self, lookup, querysets=None, to_attr=None):
+        if querysets is None:
+            raise TypeError(
+                "GenericPrefetch.__init__() missing 1 required positional argument: 'querysets'"
+            )
         for queryset in querysets:
             if queryset is not None and (
                 isinstance(queryset, RawQuerySet)

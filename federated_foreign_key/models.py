@@ -24,6 +24,11 @@ class GenericContentTypeManager(django_models.Manager):
     def clear_cache(self):
         self._cache.clear()
 
+    def create(self, *args, **kwargs):
+        obj = super().create(*args, **kwargs)
+        self._add_to_cache(self.db, obj)
+        return obj
+
     def _add_to_cache(self, using, ct):
         key = (ct.project, ct.app_label, ct.model)
         self._cache.setdefault(using, {})[key] = ct
