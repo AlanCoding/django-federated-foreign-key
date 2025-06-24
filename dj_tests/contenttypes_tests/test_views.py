@@ -1,5 +1,5 @@
 import datetime
-from unittest import mock, skipUnless
+from unittest import mock
 import django
 
 from django.contrib.contenttypes.models import ContentType
