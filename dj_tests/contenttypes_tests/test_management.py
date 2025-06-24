@@ -18,6 +18,7 @@ class RemoveStaleContentTypesTests(TestCase):
         "empty_models",
         "no_models",
         "django.contrib.contenttypes",
+        "federated_foreign_key",
     ]
 
     @classmethod

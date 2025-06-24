@@ -18,6 +18,7 @@ class ContentTypeOperationsTests(TransactionTestCase):
     available_apps = [
         "contenttypes_tests",
         "django.contrib.contenttypes",
+        "federated_foreign_key",
     ]
 
     class TestRouter:
