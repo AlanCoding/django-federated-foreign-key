@@ -64,5 +64,7 @@ pip install -e example_project
 ruff check .
 flake8
 pytest -q
+# Run Django's contenttypes tests as shipped in `dj_tests/`
+python dj_tests/runtests.py contenttypes_tests
 ```
 

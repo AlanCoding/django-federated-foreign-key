@@ -1,11 +1,27 @@
+from django.conf import settings
 from django.db.models.fields.mixins import FieldCacheMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Field
+from django.utils.module_loading import import_string
 
 from .models import GenericContentType, get_current_project_name
 
+REMOTE_OBJECT_CLASS_SETTING = "FEDERATED_REMOTE_OBJECT_CLASS"
+
+
+def get_remote_object_class():
+    """Return the class used for remote objects."""
+    path = getattr(
+        settings,
+        REMOTE_OBJECT_CLASS_SETTING,
+        "federated_foreign_key.fields.RemoteObject",
+    )
+    return import_string(path)
+
 
 class RemoteObject:
+    """Placeholder for objects that live in another project."""
+
     def __init__(self, content_type, object_id):
         self.content_type = content_type
         self.object_id = object_id
@@ -15,6 +31,7 @@ class RemoteObject:
 
 
 class FederatedForeignKey(FieldCacheMixin, Field):
+    """A GenericForeignKey variant aware of project boundaries."""
     def __init__(
         self,
         ct_field="content_type",
@@ -77,7 +94,7 @@ class FederatedForeignKey(FieldCacheMixin, Field):
                 except (ObjectDoesNotExist, LookupError):
                     rel_obj = None
             else:
-                rel_obj = RemoteObject(ct, pk_val)
+                rel_obj = get_remote_object_class()(ct, pk_val)
         self.set_cached_value(instance, rel_obj)
         return rel_obj
 

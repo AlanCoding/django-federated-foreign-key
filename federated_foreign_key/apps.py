@@ -5,6 +5,8 @@ from .management.create import create_generic_contenttypes
 
 
 class FederatedForeignKeyConfig(AppConfig):
+    """Register signals to create ``GenericContentType`` objects."""
+
     name = "federated_foreign_key"
     verbose_name = "Federated Foreign Key"
 

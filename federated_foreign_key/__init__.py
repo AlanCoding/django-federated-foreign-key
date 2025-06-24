@@ -5,6 +5,7 @@ DEFAULT_APP_CONFIG = "federated_foreign_key.apps.FederatedForeignKeyConfig"
 __all__ = [
     "FederatedForeignKey",
     "RemoteObject",
+    "get_remote_object_class",
     "GenericContentType",
     "get_current_project_name",
 ]
@@ -12,7 +13,7 @@ __all__ = [
 
 def __getattr__(name):
     if name in __all__:
-        if name in ["FederatedForeignKey", "RemoteObject"]:
+        if name in ["FederatedForeignKey", "RemoteObject", "get_remote_object_class"]:
             module_name = "federated_foreign_key.fields"
         else:
             module_name = "federated_foreign_key.models"

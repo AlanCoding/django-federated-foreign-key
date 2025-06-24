@@ -1,9 +1,17 @@
 import pytest
 
 from federated_foreign_key.models import GenericContentType
+from federated_foreign_key.fields import RemoteObject
 from example_project.testapp.models import Book, Reference
 
 pytestmark = pytest.mark.django_db
+
+
+class ExtraRemoteObject(RemoteObject):
+    """Custom remote object used in tests."""
+
+    def extra(self):
+        return self.content_type.project
 
 
 def test_local_reference():
@@ -31,3 +39,21 @@ def test_remote_reference():
     assert isinstance(obj, RemoteObject)
     assert obj.object_id == 1
     assert obj.content_type.project == remote_project
+
+
+def test_custom_remote_object(settings):
+    settings.FEDERATED_REMOTE_OBJECT_CLASS = (
+        "tests.test_federated_fk.ExtraRemoteObject"
+    )
+    remote_project = "project_c"
+    ct = GenericContentType.objects.create(
+        project=remote_project,
+        app_label="testapp",
+        model="book",
+    )
+    ref = Reference.objects.create(content_type=ct, object_id=2)
+
+    obj = ref.content_object
+
+    assert isinstance(obj, ExtraRemoteObject)
+    assert obj.extra() == remote_project
