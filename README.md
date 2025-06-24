@@ -65,6 +65,7 @@ ruff check .
 flake8
 pytest -q
 # Run Django's contenttypes tests as shipped in `dj_tests/`
-python dj_tests/runtests.py contenttypes_tests
+# Use --parallel=1 to avoid multiprocessing issues
+python dj_tests/runtests.py contenttypes_tests --parallel=1
 ```
 
