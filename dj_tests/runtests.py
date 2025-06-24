@@ -34,7 +34,10 @@ except ImportError:  # Django < 6.1
     from django.utils.deprecation import RemovedInDjango51Warning as RemovedInDjango61Warning
 from django.utils.functional import classproperty
 from django.utils.log import DEFAULT_LOGGING
-from django.utils.version import PYPY
+try:
+    from django.utils.version import PYPY
+except ImportError:  # Django >= 5.0 removed this constant
+    PYPY = False
 
 
 try:

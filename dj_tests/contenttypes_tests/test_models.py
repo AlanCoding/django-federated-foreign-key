@@ -34,7 +34,7 @@ class ContentTypesTests(TestCase):
         with self.assertNumQueries(0):
             ContentType.objects.get_for_id(ct.id)
         with self.assertNumQueries(0):
-            ContentType.objects.get_by_natural_key("contenttypes", "contenttype")
+            ContentType.objects.get_by_natural_key("default", "contenttypes", "contenttype")
 
         # Once we clear the cache, another lookup will again hit the DB
         ContentType.objects.clear_cache()
@@ -44,10 +44,10 @@ class ContentTypesTests(TestCase):
         # The same should happen with a lookup by natural key
         ContentType.objects.clear_cache()
         with self.assertNumQueries(1):
-            ContentType.objects.get_by_natural_key("contenttypes", "contenttype")
+            ContentType.objects.get_by_natural_key("default", "contenttypes", "contenttype")
         # And a second hit shouldn't hit the DB
         with self.assertNumQueries(0):
-            ContentType.objects.get_by_natural_key("contenttypes", "contenttype")
+            ContentType.objects.get_by_natural_key("default", "contenttypes", "contenttype")
 
     def test_get_for_models_creation(self):
         ContentType.objects.all().delete()

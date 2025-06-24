@@ -43,7 +43,7 @@ class GenericForeignKeyTests(SimpleTestCase):
                     "'Model.content_type' is not a ForeignKey.",
                     hint=(
                         "GenericForeignKeys must use a ForeignKey to "
-                        "'contenttypes.ContentType' as the 'content_type' field."
+                        "'federated_foreign_key.GenericContentType' as the 'content_type' field."
                     ),
                     obj=Model.content_object,
                     id="contenttypes.E003",
@@ -64,10 +64,10 @@ class GenericForeignKeyTests(SimpleTestCase):
             [
                 checks.Error(
                     "'Model.content_type' is not a ForeignKey to "
-                    "'contenttypes.ContentType'.",
+                    "'federated_foreign_key.GenericContentType'.",
                     hint=(
                         "GenericForeignKeys must use a ForeignKey to "
-                        "'contenttypes.ContentType' as the 'content_type' field."
+                        "'federated_foreign_key.GenericContentType' as the 'content_type' field."
                     ),
                     obj=Model.content_object,
                     id="contenttypes.E004",

@@ -59,7 +59,9 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                     checks.Error(
                         "'%s.%s' is not a ForeignKey." % (self.model._meta.object_name, self.ct_field),
                         hint=(
-                            "GenericForeignKeys must use a ForeignKey to 'federated_foreign_key.GenericContentType' as the 'content_type' field."
+                            "GenericForeignKeys must use a ForeignKey to "
+                            "'federated_foreign_key.GenericContentType' as the "
+                            "'content_type' field."
                         ),
                         obj=self,
                         id="contenttypes.E003",
@@ -71,7 +73,9 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                         "'%s.%s' is not a ForeignKey to 'federated_foreign_key.GenericContentType'."
                         % (self.model._meta.object_name, self.ct_field),
                         hint=(
-                            "GenericForeignKeys must use a ForeignKey to 'federated_foreign_key.GenericContentType' as the 'content_type' field."
+                            "GenericForeignKeys must use a ForeignKey to "
+                            "'federated_foreign_key.GenericContentType' as the "
+                            "'content_type' field."
                         ),
                         obj=self,
                         id="contenttypes.E004",
@@ -79,7 +83,6 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                 ]
             else:
                 return []
-
 
     def get_content_type(self, obj=None, id=None, using=None, model=None):
         if obj is not None:
@@ -118,4 +121,3 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                 rel_obj = get_remote_object_class()(ct, pk_val)
         self.set_cached_value(instance, rel_obj)
         return rel_obj
-
