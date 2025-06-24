@@ -2,7 +2,7 @@ from importlib import import_module
 
 from django.apps import apps
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
+from federated_foreign_key.models import GenericContentType as ContentType
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.test import TransactionTestCase
 
@@ -13,7 +13,7 @@ remove_content_type_name = import_module(
 
 class MultiDBRemoveContentTypeNameTests(TransactionTestCase):
     databases = {"default", "other"}
-    available_apps = ["django.contrib.auth", "django.contrib.contenttypes"]
+    available_apps = ["django.contrib.auth", "django.contrib.contenttypes", "federated_foreign_key"]
 
     def test_add_legacy_name_other_database(self):
         # add_legacy_name() should update ContentType objects in the specified

@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.contenttypes.fields import GenericForeignKey
+from federated_foreign_key.fields import FederatedForeignKey as GenericForeignKey
 from django.contrib.contenttypes.prefetch import GenericPrefetch
 from django.db import models
 from django.test import TestCase

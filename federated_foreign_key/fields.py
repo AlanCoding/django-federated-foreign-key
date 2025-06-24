@@ -1,8 +1,9 @@
 from django.conf import settings
-from django.db.models.fields.mixins import FieldCacheMixin
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Field
+from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
+from django.core import checks
+from django.db import models
 from django.utils.module_loading import import_string
+from django.contrib.contenttypes.fields import GenericForeignKey as DjangoGenericForeignKey
 
 from .models import GenericContentType, get_current_project_name
 
@@ -30,7 +31,7 @@ class RemoteObject:
         return f"<RemoteObject {self.content_type} id={self.object_id}>"
 
 
-class FederatedForeignKey(FieldCacheMixin, Field):
+class FederatedForeignKey(DjangoGenericForeignKey):
     """A GenericForeignKey variant aware of project boundaries."""
     def __init__(
         self,
@@ -38,29 +39,52 @@ class FederatedForeignKey(FieldCacheMixin, Field):
         fk_field="object_id",
         for_concrete_model=True,
     ):
-        Field.__init__(self, editable=False)
-        FieldCacheMixin.__init__(self)
-        self.ct_field = ct_field
-        self.fk_field = fk_field
-        self.for_concrete_model = for_concrete_model
-        self.is_relation = True
+        super().__init__(ct_field=ct_field, fk_field=fk_field, for_concrete_model=for_concrete_model)
 
-    @property
-    def cache_name(self):
-        return self.name
+    def _check_content_type_field(self):
+        try:
+            field = self.model._meta.get_field(self.ct_field)
+        except FieldDoesNotExist:
+            return [
+                checks.Error(
+                    "The GenericForeignKey content type references the nonexistent field '%s.%s'."
+                    % (self.model._meta.object_name, self.ct_field),
+                    obj=self,
+                    id="contenttypes.E002",
+                )
+            ]
+        else:
+            if not isinstance(field, models.ForeignKey):
+                return [
+                    checks.Error(
+                        "'%s.%s' is not a ForeignKey." % (self.model._meta.object_name, self.ct_field),
+                        hint=(
+                            "GenericForeignKeys must use a ForeignKey to "
+                            "'federated_foreign_key.GenericContentType' as the "
+                            "'content_type' field."
+                        ),
+                        obj=self,
+                        id="contenttypes.E003",
+                    )
+                ]
+            elif field.remote_field.model != GenericContentType:
+                return [
+                    checks.Error(
+                        "'%s.%s' is not a ForeignKey to 'federated_foreign_key.GenericContentType'."
+                        % (self.model._meta.object_name, self.ct_field),
+                        hint=(
+                            "GenericForeignKeys must use a ForeignKey to "
+                            "'federated_foreign_key.GenericContentType' as the "
+                            "'content_type' field."
+                        ),
+                        obj=self,
+                        id="contenttypes.E004",
+                    )
+                ]
+            else:
+                return []
 
-    def get_cache_name(self):
-        return self.cache_name
-
-    def contribute_to_class(self, cls, name, **kwargs):
-        super().contribute_to_class(cls, name, private_only=True, **kwargs)
-        setattr(cls, self.attname, self)
-
-    def get_attname_column(self):
-        attname, column = super().get_attname_column()
-        return attname, None
-
-    def get_content_type(self, obj=None, id=None, model=None):
+    def get_content_type(self, obj=None, id=None, using=None, model=None):
         if obj is not None:
             return GenericContentType.objects.get_for_model(obj.__class__)
         elif id is not None:
@@ -97,14 +121,3 @@ class FederatedForeignKey(FieldCacheMixin, Field):
                 rel_obj = get_remote_object_class()(ct, pk_val)
         self.set_cached_value(instance, rel_obj)
         return rel_obj
-
-    def __set__(self, instance, value):
-        if value is None:
-            setattr(instance, self.ct_field, None)
-            setattr(instance, self.fk_field, None)
-            self.set_cached_value(instance, None)
-            return
-        ct = self.get_content_type(obj=value)
-        setattr(instance, self.ct_field, ct)
-        setattr(instance, self.fk_field, value.pk)
-        self.set_cached_value(instance, value)

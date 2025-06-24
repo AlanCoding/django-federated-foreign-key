@@ -1,8 +1,9 @@
 import uuid
 from urllib.parse import quote
 
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericRelation
+from federated_foreign_key.fields import FederatedForeignKey
+from federated_foreign_key.models import GenericContentType
 from django.contrib.sites.models import SiteManager
 from django.db import models
 
@@ -77,9 +78,9 @@ class Question(models.Model):
 
 class Answer(models.Model):
     text = models.CharField(max_length=200)
-    content_type = models.ForeignKey(ContentType, models.CASCADE)
+    content_type = models.ForeignKey(GenericContentType, models.CASCADE)
     object_id = models.PositiveIntegerField()
-    question = GenericForeignKey()
+    question = FederatedForeignKey()
 
     class Meta:
         order_with_respect_to = "question"
@@ -89,9 +90,9 @@ class Post(models.Model):
     """An ordered tag on an item."""
 
     title = models.CharField(max_length=200)
-    content_type = models.ForeignKey(ContentType, models.CASCADE, null=True)
+    content_type = models.ForeignKey(GenericContentType, models.CASCADE, null=True)
     object_id = models.PositiveIntegerField(null=True)
-    parent = GenericForeignKey()
+    parent = FederatedForeignKey()
     children = GenericRelation("Post")
 
     class Meta:
