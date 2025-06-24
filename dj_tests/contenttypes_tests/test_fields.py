@@ -19,7 +19,7 @@ class GenericForeignKeyTests(TestCase):
 
     def test_get_content_type_no_arguments(self):
         with self.assertRaisesMessage(
-            Exception, "Impossible arguments to GFK.get_content_type!"
+            Exception, "Impossible arguments to get_content_type"
         ):
             Answer.question.get_content_type()
 
