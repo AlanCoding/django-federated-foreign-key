@@ -1,7 +1,7 @@
 from unittest import mock
 
-from django.contrib.contenttypes.checks import check_model_name_lengths
-from django.contrib.contenttypes.fields import GenericRelation
+from federated_foreign_key.checks import check_model_name_lengths
+from federated_foreign_key.fields import FederatedRelation as GenericRelation
 from federated_foreign_key.fields import FederatedForeignKey as GenericForeignKey
 from federated_foreign_key.models import GenericContentType as ContentType
 from django.core import checks

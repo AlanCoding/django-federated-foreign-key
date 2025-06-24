@@ -3,7 +3,7 @@ from unittest import mock
 import django
 
 from federated_foreign_key.models import GenericContentType as ContentType
-from django.contrib.contenttypes.views import shortcut
+from federated_foreign_key.views import shortcut
 from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpRequest

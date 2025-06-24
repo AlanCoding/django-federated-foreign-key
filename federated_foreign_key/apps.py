@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-from .management.create import create_generic_contenttypes
+from .management import create_generic_contenttypes
 
 
 class FederatedForeignKeyConfig(AppConfig):

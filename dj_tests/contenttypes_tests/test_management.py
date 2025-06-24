@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.apps.registry import Apps, apps
-from django.contrib.contenttypes import management as contenttypes_management
+from federated_foreign_key import management as contenttypes_management
 from federated_foreign_key.models import GenericContentType as ContentType
 from django.core.management import call_command
 from django.test import TestCase, modify_settings
@@ -80,8 +80,8 @@ class RemoveStaleContentTypesTests(TestCase):
         """A ContentType isn't created if the model isn't available."""
         apps = Apps()
         with self.assertNumQueries(0):
-            contenttypes_management.create_contenttypes(
-                self.app_config, interactive=False, verbosity=0, apps=apps
+            contenttypes_management.create_generic_contenttypes(
+                self.app_config, verbosity=0, apps=apps
             )
         self.assertEqual(ContentType.objects.count(), self.before_count + 1)
 

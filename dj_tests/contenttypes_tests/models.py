@@ -1,7 +1,7 @@
 import uuid
 from urllib.parse import quote
 
-from django.contrib.contenttypes.fields import GenericRelation
+from federated_foreign_key.fields import FederatedRelation as GenericRelation
 from federated_foreign_key.fields import FederatedForeignKey
 from federated_foreign_key.models import GenericContentType
 from django.contrib.sites.models import SiteManager
