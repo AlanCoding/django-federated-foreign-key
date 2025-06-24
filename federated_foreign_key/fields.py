@@ -102,11 +102,13 @@ class FederatedForeignKey(DjangoGenericForeignKey):
 
     def get_content_type(self, obj=None, id=None, using=None, model=None):
         if obj is not None:
-            return GenericContentType.objects.get_for_model(obj.__class__)
+            return GenericContentType.objects.db_manager(obj._state.db).get_for_model(
+                obj.__class__,
+            )
         elif id is not None:
-            return GenericContentType.objects.get(pk=id)
+            return GenericContentType.objects.db_manager(using).get_for_id(id)
         elif model is not None:
-            return GenericContentType.objects.get_for_model(model)
+            return GenericContentType.objects.db_manager(using).get_for_model(model)
         else:
             raise Exception("Impossible arguments to get_content_type")
 

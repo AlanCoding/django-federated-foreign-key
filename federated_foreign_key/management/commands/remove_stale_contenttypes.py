@@ -5,7 +5,7 @@ from django.core.management import BaseCommand
 from django.db import DEFAULT_DB_ALIAS, connections, router
 from django.db.models.deletion import Collector
 
-from ...models import GenericContentType as ContentType
+from ...models import GenericContentType as ContentType, get_current_project_name
 
 
 class Command(BaseCommand):
@@ -45,8 +45,11 @@ class Command(BaseCommand):
             return
         ContentType.objects.clear_cache()
 
+        project = get_current_project_name()
         apps_content_types = itertools.groupby(
-            ContentType.objects.using(db).order_by("app_label", "model"),
+            ContentType.objects.using(db)
+            .filter(project=project)
+            .order_by("app_label", "model"),
             lambda obj: obj.app_label,
         )
         for app_label, content_types in apps_content_types:

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.apps import apps
 from django.db import models as django_models
@@ -13,20 +15,23 @@ def get_current_project_name():
 class GenericContentTypeManager(django_models.Manager):
     """Manager storing ``GenericContentType`` objects per project."""
 
+    use_in_migrations = True
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._cache = None
-
-    def _get_cache(self):
-        if self._cache is None:
-            self._cache = {
-                (ct.project, ct.app_label, ct.model): ct
-                for ct in super().get_queryset().all()
-            }
-        return self._cache
+        self._cache = {}
 
     def clear_cache(self):
-        self._cache = None
+        self._cache.clear()
+
+    def _add_to_cache(self, using, ct):
+        key = (ct.project, ct.app_label, ct.model)
+        self._cache.setdefault(using, {})[key] = ct
+        self._cache.setdefault(using, {})[ct.id] = ct
+
+    def _get_from_cache(self, opts, project):
+        key = (project, opts.app_label, opts.model_name)
+        return self._cache[self.db][key]
 
     def _get_opts(self, model, for_concrete_model):
         return model._meta.concrete_model._meta if for_concrete_model else model._meta
@@ -35,46 +40,62 @@ class GenericContentTypeManager(django_models.Manager):
         if project is None:
             project = get_current_project_name()
         opts = self._get_opts(model, for_concrete_model)
-        key = (project, opts.app_label, opts.model_name)
-        cache = self._get_cache()
-        if key in cache:
-            return cache[key]
-        ct, _ = self.get_or_create(
-            project=project,
-            app_label=opts.app_label,
-            model=opts.model_name,
-        )
-        cache[key] = ct
+        try:
+            return self._get_from_cache(opts, project)
+        except KeyError:
+            pass
+
+        try:
+            ct = self.get(
+                project=project, app_label=opts.app_label, model=opts.model_name
+            )
+        except self.model.DoesNotExist:
+            ct, _ = self.get_or_create(
+                project=project,
+                app_label=opts.app_label,
+                model=opts.model_name,
+            )
+        self._add_to_cache(self.db, ct)
         return ct
 
     def get_for_models(self, *model_list, for_concrete_models=True, project=None):
         if project is None:
             project = get_current_project_name()
         results = {}
-        needed = {}
-        cache = self._get_cache()
+        needed_models = defaultdict(set)
+        needed_opts = defaultdict(list)
         for model in model_list:
             opts = self._get_opts(model, for_concrete_models)
-            key = (project, opts.app_label, opts.model_name)
-            if key in cache:
-                results[model] = cache[key]
+            try:
+                ct = self._get_from_cache(opts, project)
+            except KeyError:
+                needed_models[opts.app_label].add(opts.model_name)
+                needed_opts[(opts.app_label, opts.model_name)].append(model)
             else:
-                needed.setdefault((opts.app_label, opts.model_name), []).append(model)
+                results[model] = ct
 
-        if needed:
-            condition = django_models.Q()
-            for app_label, model_name in needed.keys():
-                condition |= django_models.Q(project=project, app_label=app_label, model=model_name)
+        if needed_opts:
+            condition = django_models.Q(
+                *(
+                    django_models.Q(
+                        ("project", project),
+                        ("app_label", app_label),
+                        ("model__in", models),
+                    )
+                    for app_label, models in needed_models.items()
+                ),
+                _connector=django_models.Q.OR,
+            )
             cts = self.filter(condition)
             for ct in cts:
-                key = (ct.app_label, ct.model)
-                for model in needed.pop(key, []):
+                opts_models = needed_opts.pop((ct.app_label, ct.model), [])
+                for model in opts_models:
                     results[model] = ct
-                cache[(ct.project, ct.app_label, ct.model)] = ct
-            for (app_label, model_name), model_objs in needed.items():
+                self._add_to_cache(self.db, ct)
+            for (app_label, model_name), opts_models in needed_opts.items():
                 ct = self.create(project=project, app_label=app_label, model=model_name)
-                cache[(project, app_label, model_name)] = ct
-                for model in model_objs:
+                self._add_to_cache(self.db, ct)
+                for model in opts_models:
                     results[model] = ct
         return results
 
@@ -85,27 +106,26 @@ class GenericContentTypeManager(django_models.Manager):
         else:
             project, app_label, model = args
         key = (project, app_label, model)
-        cache = self._get_cache()
-        if key in cache:
-            return cache[key]
-        ct = self.get(project=project, app_label=app_label, model=model)
-        cache[key] = ct
-        return ct
+        try:
+            return self._cache[self.db][key]
+        except KeyError:
+            ct = self.get(project=project, app_label=app_label, model=model)
+            self._add_to_cache(self.db, ct)
+            return ct
 
     def get_for_id(self, id):
-        cache = self._get_cache()
-        for ct in cache.values():
-            if ct.id == id:
-                return ct
-        ct = self.get(pk=id)
-        cache[(ct.project, ct.app_label, ct.model)] = ct
-        return ct
+        try:
+            return self._cache[self.db][id]
+        except KeyError:
+            ct = self.get(pk=id)
+            self._add_to_cache(self.db, ct)
+            return ct
 
 
 class GenericContentType(django_models.Model):
     """Like Django's ``ContentType`` model but scoped by project."""
 
-    project = django_models.CharField(max_length=100)
+    project = django_models.CharField(max_length=100, default=get_current_project_name)
     app_label = django_models.CharField(max_length=100)
     model = django_models.CharField(max_length=100)
 
@@ -126,10 +146,6 @@ class GenericContentType(django_models.Model):
             return self.model
         return str(model._meta.verbose_name)
 
-    @name.setter
-    def name(self, value):
-        """Ignore writes for backward compatibility."""
-        pass
 
     @property
     def app_labeled_name(self):
