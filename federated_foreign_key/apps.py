@@ -5,8 +5,8 @@ from .management.create import create_generic_contenttypes
 
 
 class FederatedForeignKeyConfig(AppConfig):
-    name = 'federated_foreign_key'
-    verbose_name = 'Federated Foreign Key'
+    name = "federated_foreign_key"
+    verbose_name = "Federated Foreign Key"
 
     def ready(self):
         post_migrate.connect(create_generic_contenttypes)

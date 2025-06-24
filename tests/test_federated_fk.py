@@ -18,7 +18,7 @@ def test_local_reference():
 
 def test_remote_reference():
     # simulate remote project
-    remote_project = 'project_b'
+    remote_project = "project_b"
     ct = GenericContentType.objects.create(
         project=remote_project,
         app_label="testapp",
@@ -27,6 +27,7 @@ def test_remote_reference():
     ref = Reference.objects.create(content_type=ct, object_id=1)
     obj = ref.content_object
     from federated_foreign_key.fields import RemoteObject
+
     assert isinstance(obj, RemoteObject)
     assert obj.object_id == 1
     assert obj.content_type.project == remote_project

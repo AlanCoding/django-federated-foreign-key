@@ -13,4 +13,4 @@ class Reference(models.Model):
         on_delete=models.CASCADE,
     )
     object_id = models.PositiveIntegerField()
-    content_object = FederatedForeignKey('content_type', 'object_id')
+    content_object = FederatedForeignKey("content_type", "object_id")

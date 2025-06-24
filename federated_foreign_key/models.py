@@ -2,11 +2,11 @@ from django.conf import settings
 from django.apps import apps
 from django.db import models
 
-PROJECT_SETTING_NAME = 'FEDERATION_PROJECT_NAME'
+PROJECT_SETTING_NAME = "FEDERATION_PROJECT_NAME"
 
 
 def get_current_project_name():
-    return getattr(settings, PROJECT_SETTING_NAME, 'default')
+    return getattr(settings, PROJECT_SETTING_NAME, "default")
 
 
 class GenericContentTypeManager(models.Manager):
@@ -76,7 +76,7 @@ class GenericContentType(models.Model):
         return f"{self.project}:{self.app_label}.{self.model}"
 
     def model_class(self):
-        if self.project not in ('shared', get_current_project_name()):
+        if self.project not in ("shared", get_current_project_name()):
             return None
         try:
             return apps.get_model(self.app_label, self.model)
