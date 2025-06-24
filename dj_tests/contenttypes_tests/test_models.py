@@ -3,7 +3,7 @@ from federated_foreign_key.models import (
     GenericContentType as ContentType,
     GenericContentTypeManager as ContentTypeManager,
 )
-from django.contrib.contenttypes.prefetch import GenericPrefetch
+from federated_foreign_key.prefetch import FederatedPrefetch as GenericPrefetch
 from django.db import models
 from django.db.migrations.state import ModelState, ProjectState
 from django.test import TestCase, override_settings

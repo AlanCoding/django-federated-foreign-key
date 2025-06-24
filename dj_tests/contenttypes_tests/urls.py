@@ -1,4 +1,4 @@
-from django.contrib.contenttypes import views
+from federated_foreign_key import views
 from django.urls import re_path
 
 urlpatterns = [
