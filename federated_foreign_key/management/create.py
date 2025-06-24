@@ -3,6 +3,7 @@ from django.db import DEFAULT_DB_ALIAS, router
 
 def _get_models():
     from ..models import GenericContentType, get_current_project_name
+
     return GenericContentType, get_current_project_name
 
 

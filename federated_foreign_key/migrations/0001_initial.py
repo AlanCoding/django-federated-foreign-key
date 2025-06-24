@@ -6,23 +6,23 @@ class Migration(migrations.Migration):
     dependencies = []
     operations = [
         migrations.CreateModel(
-            name='GenericContentType',
+            name="GenericContentType",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name='ID',
+                        verbose_name="ID",
                     ),
                 ),
-                ('project', models.CharField(max_length=100)),
-                ('app_label', models.CharField(max_length=100)),
-                ('model', models.CharField(max_length=100)),
+                ("project", models.CharField(max_length=100)),
+                ("app_label", models.CharField(max_length=100)),
+                ("model", models.CharField(max_length=100)),
             ],
             options={
-                'unique_together': {('project', 'app_label', 'model')},
+                "unique_together": {("project", "app_label", "model")},
             },
         ),
     ]
