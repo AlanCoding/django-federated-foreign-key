@@ -2,29 +2,17 @@ from django.apps import apps as global_apps
 from django.db import DEFAULT_DB_ALIAS, router
 
 
-def _get_models(apps):
-    from ..models import get_current_project_name
-
-    GenericContentType = apps.get_model(
-        "federated_foreign_key", "GenericContentType"
-    )
-    return GenericContentType, get_current_project_name
-
-
-def get_generic_contenttypes_and_models(app_config, using, GenericContentTypeModel, project):
-    if not router.allow_migrate_model(using, GenericContentTypeModel):
+def get_generic_contenttypes_and_models(app_config, using, GenericContentType, project):
+    if not router.allow_migrate_model(using, GenericContentType):
         return None, None
 
-    from ..models import GenericContentType
-
-    GenericContentType.objects.clear_cache()
-    clear = getattr(GenericContentTypeModel.objects, "clear_cache", None)
-    if clear:
-        clear()
+    clear_cache = getattr(GenericContentType.objects, "clear_cache", None)
+    if clear_cache:
+        clear_cache()
 
     content_types = {
         ct.model: ct
-        for ct in GenericContentTypeModel.objects.using(using).filter(
+        for ct in GenericContentType.objects.using(using).filter(
             project=project, app_label=app_config.label
         )
     }
@@ -46,21 +34,22 @@ def create_generic_contenttypes(
     app_label = app_config.label
     try:
         app_config = apps.get_app_config(app_label)
-        GenericContentTypeModel, get_current_project_name = _get_models(apps)
+        GenericContentType = apps.get_model("federated_foreign_key", "GenericContentType")
+        from ..models import get_current_project_name
     except LookupError:
         return
 
     project = get_current_project_name()
 
     content_types, app_models = get_generic_contenttypes_and_models(
-        app_config, using, GenericContentTypeModel, project
+        app_config, using, GenericContentType, project
     )
 
     if not app_models:
         return
 
     cts = [
-        GenericContentTypeModel(
+        GenericContentType(
             project=project,
             app_label=app_label,
             model=model_name,
@@ -70,7 +59,7 @@ def create_generic_contenttypes(
     ]
     if not cts:
         return
-    GenericContentTypeModel.objects.using(using).bulk_create(cts)
+    GenericContentType.objects.using(using).bulk_create(cts)
     if verbosity >= 2:
         for ct in cts:
             print(

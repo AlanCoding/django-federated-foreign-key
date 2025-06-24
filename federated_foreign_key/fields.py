@@ -112,9 +112,7 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                 obj.__class__,
             )
         elif id is not None:
-            # Avoid cached lookup so stale cache entries don't return
-            # content types for different databases between tests.
-            return GenericContentType.objects.db_manager(using).get(pk=id)
+            return GenericContentType.objects.db_manager(using).get_for_id(id)
         elif model is not None:
             return GenericContentType.objects.db_manager(using).get_for_model(model)
         else:
