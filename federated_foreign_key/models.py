@@ -6,10 +6,13 @@ PROJECT_SETTING_NAME = "FEDERATION_PROJECT_NAME"
 
 
 def get_current_project_name():
+    """Return the current project name used for federated lookups."""
     return getattr(settings, PROJECT_SETTING_NAME, "default")
 
 
 class GenericContentTypeManager(models.Manager):
+    """Manager storing ``GenericContentType`` objects per project."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cache = None
@@ -61,6 +64,8 @@ class GenericContentTypeManager(models.Manager):
 
 
 class GenericContentType(models.Model):
+    """Like Django's ``ContentType`` model but scoped by project."""
+
     project = models.CharField(max_length=100)
     app_label = models.CharField(max_length=100)
     model = models.CharField(max_length=100)

@@ -4,10 +4,13 @@ from federated_foreign_key.models import GenericContentType
 
 
 class Book(models.Model):
+    """Sample model used for tests."""
+
     title = models.CharField(max_length=50)
 
 
 class Reference(models.Model):
+    """Model holding a federated relation to any object."""
     content_type = models.ForeignKey(
         GenericContentType,
         on_delete=models.CASCADE,
