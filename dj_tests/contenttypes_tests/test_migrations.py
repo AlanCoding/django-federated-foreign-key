@@ -13,7 +13,11 @@ remove_content_type_name = import_module(
 
 class MultiDBRemoveContentTypeNameTests(TransactionTestCase):
     databases = {"default", "other"}
-    available_apps = ["django.contrib.auth", "django.contrib.contenttypes", "federated_foreign_key"]
+    available_apps = [
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "federated_foreign_key",
+    ]
 
     def test_add_legacy_name_other_database(self):
         # add_legacy_name() should update ContentType objects in the specified

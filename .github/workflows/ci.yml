@@ -84,4 +84,4 @@ jobs:
           pip install -e .
           pip install -e example_project
       - name: Django contenttypes tests
-        run: python dj_tests/runtests.py contenttypes_tests
+        run: python dj_tests/runtests.py contenttypes_tests --parallel=1

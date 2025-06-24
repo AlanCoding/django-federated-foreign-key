@@ -42,9 +42,7 @@ def test_remote_reference():
 
 
 def test_custom_remote_object(settings):
-    settings.FEDERATED_REMOTE_OBJECT_CLASS = (
-        "tests.test_federated_fk.ExtraRemoteObject"
-    )
+    settings.FEDERATED_REMOTE_OBJECT_CLASS = "tests.test_federated_fk.ExtraRemoteObject"
     remote_project = "project_c"
     ct = GenericContentType.objects.create(
         project=remote_project,

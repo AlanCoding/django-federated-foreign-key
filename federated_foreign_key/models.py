@@ -146,7 +146,6 @@ class GenericContentType(django_models.Model):
             return self.model
         return str(model._meta.verbose_name)
 
-
     @property
     def app_labeled_name(self):
         model = self.model_class()
