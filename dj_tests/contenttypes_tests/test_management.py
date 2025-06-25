@@ -49,7 +49,9 @@ class RemoveStaleContentTypesTests(TestCase):
         ModelWithNullFKToSite.objects.create(post=post)
         with mock.patch("builtins.input", return_value="yes"):
             with captured_stdout() as stdout:
-                call_command("remove_stale_generic_contenttypes", verbosity=2, stdout=stdout)
+                call_command(
+                    "remove_stale_generic_contenttypes", verbosity=2, stdout=stdout
+                )
         self.assertEqual(Post.objects.count(), 0)
         output = stdout.getvalue()
         self.assertIn("- Content type for contenttypes_tests.Fake", output)
@@ -72,7 +74,9 @@ class RemoveStaleContentTypesTests(TestCase):
     def test_interactive_false(self):
         """non-interactive mode deletes stale content types."""
         with captured_stdout() as stdout:
-            call_command("remove_stale_generic_contenttypes", interactive=False, verbosity=2)
+            call_command(
+                "remove_stale_generic_contenttypes", interactive=False, verbosity=2
+            )
         self.assertIn("Deleting stale content type", stdout.getvalue())
         self.assertEqual(ContentType.objects.count(), self.before_count)
 
@@ -113,7 +117,9 @@ class RemoveStaleContentTypesTests(TestCase):
             captured_stdout() as stdout,
         ):
             call_command(
-                "remove_stale_generic_contenttypes", include_stale_apps=True, verbosity=2
+                "remove_stale_generic_contenttypes",
+                include_stale_apps=True,
+                verbosity=2,
             )
         self.assertIn(
             "Deleting stale content type 'empty_models | Fake 1'",

@@ -34,7 +34,9 @@ def create_generic_contenttypes(
     app_label = app_config.label
     try:
         app_config = apps.get_app_config(app_label)
-        GenericContentType = apps.get_model("federated_foreign_key", "GenericContentType")
+        GenericContentType = apps.get_model(
+            "federated_foreign_key", "GenericContentType"
+        )
         from ..models import get_current_project_name
     except LookupError:
         return

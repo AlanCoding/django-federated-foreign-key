@@ -35,7 +35,7 @@ class ContentTypesTests(TestCase):
             ContentType.objects.get_for_id(ct.id)
         with self.assertNumQueries(0):
             ContentType.objects.get_by_natural_key(
-                "default", "contenttypes", "contenttype"
+                "default", "federated_foreign_key", "genericcontenttype"
             )
 
         # Once we clear the cache, another lookup will again hit the DB
@@ -47,12 +47,12 @@ class ContentTypesTests(TestCase):
         ContentType.objects.clear_cache()
         with self.assertNumQueries(1):
             ContentType.objects.get_by_natural_key(
-                "default", "contenttypes", "contenttype"
+                "default", "federated_foreign_key", "genericcontenttype"
             )
         # And a second hit shouldn't hit the DB
         with self.assertNumQueries(0):
             ContentType.objects.get_by_natural_key(
-                "default", "contenttypes", "contenttype"
+                "default", "federated_foreign_key", "genericcontenttype"
             )
 
     def test_get_for_models_creation(self):
