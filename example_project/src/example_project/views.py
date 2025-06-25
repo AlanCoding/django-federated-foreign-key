@@ -9,5 +9,7 @@ def unified_books(request):
     with urlopen("http://localhost:8001/books/") as resp:
         remote = json.load(resp)
     combined = [{"id": b["id"], "title": b["title"], "source": "local"} for b in local]
-    combined += [{"id": b["id"], "title": b["title"], "source": "remote"} for b in remote]
+    combined += [
+        {"id": b["id"], "title": b["title"], "source": "remote"} for b in remote
+    ]
     return JsonResponse(combined, safe=False)
