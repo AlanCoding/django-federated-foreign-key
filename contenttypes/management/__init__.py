@@ -28,7 +28,7 @@ class RenameContentType(migrations.RunPython):
                     content_type.save(using=db, update_fields={"model"})
             except IntegrityError:
                 # Gracefully fallback if a stale content type causes a
-                # conflict as remove_stale_contenttypes will take care of
+                # conflict as remove_stale_generic_contenttypes will take care of
                 # asking the user what should be done next.
                 content_type.model = old_model
             else:
