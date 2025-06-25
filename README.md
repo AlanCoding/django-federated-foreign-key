@@ -81,3 +81,7 @@ environment variable.
 ./run_demo.sh
 ```
 
+Provided that is running, go visit in your browser the URL:
+
+http://localhost:8000/books/
+
