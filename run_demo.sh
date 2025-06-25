@@ -15,7 +15,8 @@ sleep 3
 
 (cd example_project && \
     DATABASE_NAME=db_example.sqlite3 ./manage.py migrate --noinput && \
-    DATABASE_NAME=db_example.sqlite3 ./manage.py shell -c "from example_project.testapp.models import Book; Book.objects.create(title='Local Book 1');" && \
+    DATABASE_NAME=db_example.sqlite3 ./manage.py shell -c "from example_project.testapp.models import Book, Reference; from federated_foreign_key.models import GenericContentType; b=Book.objects.create(title='Local Book 1'); ct=GenericContentType.objects.get_for_model(Book); Reference.objects.create(content_type=ct, object_id=b.pk);" && \
+    DATABASE_NAME=db_example.sqlite3 ./manage.py sync_remote_books && \
     DATABASE_NAME=db_example.sqlite3 ./manage.py runserver 8000 &)
 LOCAL_PID=$!
 
