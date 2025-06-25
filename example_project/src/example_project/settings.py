@@ -1,3 +1,5 @@
+import os
+
 SECRET_KEY = "test"
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
@@ -8,7 +10,7 @@ INSTALLED_APPS = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
+        "NAME": os.environ.get("DATABASE_NAME", ":memory:"),
     }
 }
 FEDERATION_PROJECT_NAME = "project_a"

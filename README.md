@@ -69,3 +69,15 @@ pytest -q
 python dj_tests/runtests.py contenttypes_tests --parallel=1
 ```
 
+## Demo
+
+Run the included `run_demo.sh` script to start two demo servers.
+The main `example_project` exposes `/books/` which lists local books and
+books fetched from the `remote_project` server. SQLite database files are
+created in each project directory when the script sets the `DATABASE_NAME`
+environment variable.
+
+```bash
+./run_demo.sh
+```
+
