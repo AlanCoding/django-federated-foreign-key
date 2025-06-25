@@ -101,8 +101,11 @@ class ContentTypesTests(TestCase):
         )
 
     def test_get_for_models_migrations(self):
-        state = ProjectState.from_apps(apps.get_app_config("contenttypes"))
-        ContentType = state.apps.get_model("contenttypes", "ContentType")
+        state = ProjectState.from_apps(apps.get_app_config("federated_foreign_key"))
+        ContentType = state.apps.get_model(
+            "federated_foreign_key",
+            "GenericContentType",
+        )
         cts = ContentType.objects.get_for_models(ContentType)
         self.assertEqual(
             cts, {ContentType: ContentType.objects.get_for_model(ContentType)}
@@ -110,14 +113,17 @@ class ContentTypesTests(TestCase):
 
     @isolate_apps("contenttypes_tests")
     def test_get_for_models_migrations_create_model(self):
-        state = ProjectState.from_apps(apps.get_app_config("contenttypes"))
+        state = ProjectState.from_apps(apps.get_app_config("federated_foreign_key"))
 
         class Foo(models.Model):
             class Meta:
                 app_label = "contenttypes_tests"
 
         state.add_model(ModelState.from_model(Foo))
-        ContentType = state.apps.get_model("contenttypes", "ContentType")
+        ContentType = state.apps.get_model(
+            "federated_foreign_key",
+            "GenericContentType",
+        )
         cts = ContentType.objects.get_for_models(FooWithUrl, Foo)
         self.assertEqual(
             cts,
