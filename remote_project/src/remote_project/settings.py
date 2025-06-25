@@ -2,8 +2,7 @@ SECRET_KEY = "test"
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "federated_foreign_key",
-    "example_project.testapp",
-    "django.contrib.sites",
+    "remote_project.remoteapp",
 ]
 DATABASES = {
     "default": {
@@ -11,8 +10,7 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
-FEDERATION_PROJECT_NAME = "project_a"
-FEDERATED_REMOTE_OBJECT_CLASS = "example_project.remote.RemoteBook"
-ROOT_URLCONF = "example_project.urls"
+FEDERATION_PROJECT_NAME = "project_b"
+ROOT_URLCONF = "remote_project.urls"
 ALLOWED_HOSTS = ["*"]
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
