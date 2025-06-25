@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("federated_foreign_key", "0002_alter_genericcontenttype_managers_and_more"),
+        ("federated_foreign_key", "0001_initial"),
     ]
 
     operations = [
