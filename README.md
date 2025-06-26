@@ -1,29 +1,27 @@
 # django-federated-foreign-key
-A GenericForeignKey drop-in with ability to point to items in another server
-
-Install from source using `pip`:
+A `GenericForeignKey` drop-in replacement with ability to point to items in another server.
+Install with pip:
 
 ```bash
-pip install -e .
+pip install django-federated-foreign-key
 ```
 
 ## GenericForeignKey
 
-A generic foreign key allows pointing to objects of any type.
+A `GenericForeignKey` allows pointing to objects of any type.
 To do this, it uses 2 existing fields on the model:
- - A reference to a `ContentType` entry and
- - An id of the related object
+ - A reference to a `ContentType` entry, usually named `content_type` and
+ - An id of the related object, usually named `object_id`
 
 https://docs.djangoproject.com/en/5.2/ref/contrib/contenttypes/#django.contrib.contenttypes.fields.GenericForeignKey
 
 ## Difference for Federated Foreign Key
 
-The limitation that we are addressing here is that `ContentType` is only designed to
-reference models that exist within the local system.
-It is also taken as obvious that the `object_id` (the related object id) is the id
-of the object, in the related table, in the same database.
+The limitation that `FederatedForeignKey` address is that `ContentType` is only designed to
+reference models that exist within the local system, and thus, `GenericForeignKey` as well.
+It is taken as obvious that `object_id` (the related object id) is the id of the object, in another table, in the same database.
 
-The intent of a federated foreign key is to provide the same interface,
+The intent of `FederatedForeignKey` is to provide the same interface,
 but expand this to allow referencing objects in different databases.
 
 ## Usage
@@ -109,9 +107,28 @@ But maybe the two shops have different prices.
 This helps present a unified list of shopping options for books.
 Each entry could have its own shopping cart icon, to buy that book from that server, at that cost.
 
+In this case, you would need to create a `GenericContentType` for the remote model.
+This can have the same (app_label, model_name) as the local model, which is also a `GenericContentType`.
+However, the model is also unique on project name, so this is allowed.
+
 ### Synchronized tables
 
+In this case we assume a table is sychronized by some other mechanism.
+This is not in scope of this project, but could be done by something like the DAB resource_registry app.
 
+https://github.com/ansible/django-ansible-base/tree/devel/ansible_base/resource_registry
+
+To avoid setting a specific owner of the table, a value of "shared" for the project name
+will signify that all servers should treat the item as a local object (within the same DB).
+
+### Different model on remote server
+
+Finally, it would likely to useful to reference a model that doesn't exist locally.
+Say that you were a book shop, but you didn't cary any audiobooks.
+Perhaps another server has an `Audiobook` model, and you want to reference audiobooks.
+
+This is a good example of where you would need to create a `GenericContentType`,
+where the (app_label, model_name) combination does not exist locally.
 
 ## Illustration
 
