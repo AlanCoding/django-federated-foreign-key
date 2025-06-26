@@ -6,6 +6,8 @@ Install with pip:
 pip install django-federated-foreign-key
 ```
 
+[![PyPI version](https://img.shields.io/pypi/v/django-federated-foreign-key.svg)](https://pypi.org/project/django-federated-foreign-key/)
+
 ## GenericForeignKey
 
 A `GenericForeignKey` allows pointing to objects of any type.
