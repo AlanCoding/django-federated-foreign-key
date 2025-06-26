@@ -55,3 +55,15 @@ def test_custom_remote_object(settings):
 
     assert isinstance(obj, ExtraRemoteObject)
     assert obj.extra() == remote_project
+
+
+def test_shared_project_local_reference():
+    """References to the 'shared' project are treated as local."""
+    book = Book.objects.create(title="Shared book")
+    ct = GenericContentType.objects.get_for_model(Book, project="shared")
+    Reference.objects.create(content_type=ct, object_id=book.pk)
+
+    ref = Reference.objects.get()
+    assert ref.content_type.project == "shared"
+    assert isinstance(ref.content_object, Book)
+    assert ref.content_object.pk == book.pk
