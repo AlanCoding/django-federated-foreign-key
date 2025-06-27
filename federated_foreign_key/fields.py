@@ -4,7 +4,7 @@ import itertools
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.core import checks
-from django.db import DEFAULT_DB_ALIAS, models, router, transaction
+from django.db import DEFAULT_DB_ALIAS, models, router
 from django.db.models import DO_NOTHING, ForeignObject, ForeignObjectRel
 from django.db.models.base import ModelBase, make_foreign_order_accessors
 
@@ -466,114 +466,5 @@ def create_federated_related_manager(superclass, rel):
                 self.prefetch_cache_name,
                 False,
             )
-
-        def add(self, *objs, bulk=True):
-            self._remove_prefetched_objects()
-            db = router.db_for_write(self.model, instance=self.instance)
-
-            def check_and_update_obj(obj):
-                if not isinstance(obj, self.model):
-                    raise TypeError(
-                        "'%s' instance expected, got %r"
-                        % (self.model._meta.object_name, obj)
-                    )
-                setattr(obj, self.content_type_field_name, self.content_type)
-                setattr(obj, self.object_id_field_name, self.pk_val)
-
-            if bulk:
-                pks = []
-                for obj in objs:
-                    if obj._state.adding or obj._state.db != db:
-                        raise ValueError(
-                            "%r instance isn't saved. Use bulk=False or save the object first."
-                            % obj
-                        )
-                    check_and_update_obj(obj)
-                    pks.append(obj.pk)
-
-                self.model._base_manager.using(db).filter(pk__in=pks).update(
-                    **{
-                        self.content_type_field_name: self.content_type,
-                        self.object_id_field_name: self.pk_val,
-                    }
-                )
-            else:
-                with transaction.atomic(using=db, savepoint=False):
-                    for obj in objs:
-                        check_and_update_obj(obj)
-                        obj.save()
-
-        add.alters_data = True
-
-        def remove(self, *objs, bulk=True):
-            if not objs:
-                return
-            self._clear(self.filter(pk__in=[o.pk for o in objs]), bulk)
-
-        remove.alters_data = True
-
-        def clear(self, *, bulk=True):
-            self._clear(self, bulk)
-
-        clear.alters_data = True
-
-        def _clear(self, queryset, bulk):
-            self._remove_prefetched_objects()
-            db = router.db_for_write(self.model, instance=self.instance)
-            queryset = queryset.using(db)
-            if bulk:
-                queryset.delete()
-            else:
-                with transaction.atomic(using=db, savepoint=False):
-                    for obj in queryset:
-                        obj.delete()
-
-        _clear.alters_data = True
-
-        def set(self, objs, *, bulk=True, clear=False):
-            objs = tuple(objs)
-            db = router.db_for_write(self.model, instance=self.instance)
-            with transaction.atomic(using=db, savepoint=False):
-                if clear:
-                    self.clear()
-                    self.add(*objs, bulk=bulk)
-                else:
-                    old_objs = set(self.using(db).all())
-                    new_objs = []
-                    for obj in objs:
-                        if obj in old_objs:
-                            old_objs.remove(obj)
-                        else:
-                            new_objs.append(obj)
-
-                    self.remove(*old_objs)
-                    self.add(*new_objs, bulk=bulk)
-
-        set.alters_data = True
-
-        def create(self, **kwargs):
-            self._remove_prefetched_objects()
-            kwargs[self.content_type_field_name] = self.content_type
-            kwargs[self.object_id_field_name] = self.pk_val
-            db = router.db_for_write(self.model, instance=self.instance)
-            return super().using(db).create(**kwargs)
-
-        create.alters_data = True
-
-        def get_or_create(self, **kwargs):
-            kwargs[self.content_type_field_name] = self.content_type
-            kwargs[self.object_id_field_name] = self.pk_val
-            db = router.db_for_write(self.model, instance=self.instance)
-            return super().using(db).get_or_create(**kwargs)
-
-        get_or_create.alters_data = True
-
-        def update_or_create(self, **kwargs):
-            kwargs[self.content_type_field_name] = self.content_type
-            kwargs[self.object_id_field_name] = self.pk_val
-            db = router.db_for_write(self.model, instance=self.instance)
-            return super().using(db).update_or_create(**kwargs)
-
-        update_or_create.alters_data = True
 
     return FederatedRelatedObjectManager

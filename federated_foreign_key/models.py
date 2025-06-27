@@ -172,11 +172,5 @@ class GenericContentType(django_models.Model):
             raise LookupError("Model not available in this project")
         return model._base_manager.get(**kwargs)
 
-    def get_all_objects_for_this_type(self, **kwargs):
-        model = self.model_class()
-        if model is None:
-            return []
-        return model._base_manager.filter(**kwargs)
-
     def natural_key(self):
         return (self.project, self.app_label, self.model)
