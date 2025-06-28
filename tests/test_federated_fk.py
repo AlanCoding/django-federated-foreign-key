@@ -67,3 +67,39 @@ def test_shared_project_local_reference():
     assert ref.content_type.project == "shared"
     assert isinstance(ref.content_object, Book)
     assert ref.content_object.pk == book.pk
+
+
+def test_reverse_manager_add_remove_clear():
+    book = Book.objects.create(title="AddRemove")
+    other = Book.objects.create(title="Other")
+    ct = GenericContentType.objects.get_for_model(Book)
+    ref1 = Reference.objects.create(content_type=ct, object_id=other.pk)
+    ref2 = Reference.objects.create(content_type=ct, object_id=other.pk)
+
+    book.references.add(ref1, ref2)
+    ref1.refresh_from_db()
+    ref2.refresh_from_db()
+    assert set(book.references.all()) == {ref1, ref2}
+    assert ref1.object_id == book.pk
+
+    book.references.remove(ref1)
+    assert list(book.references.all()) == [ref2]
+
+    book.references.clear()
+    assert book.references.count() == 0
+
+
+def test_reverse_manager_create_and_get():
+    book = Book.objects.create(title="Create")
+
+    ref = book.references.create()
+    assert ref.content_object == book
+    assert list(book.references.all()) == [ref]
+
+    same, created = book.references.get_or_create(pk=ref.pk)
+    assert not created
+    assert same == ref
+
+    updated, created = book.references.update_or_create(pk=ref.pk)
+    assert not created
+    assert updated == ref
