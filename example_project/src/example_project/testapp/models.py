@@ -1,5 +1,5 @@
 from django.db import models
-from federated_foreign_key.fields import FederatedForeignKey
+from federated_foreign_key.fields import FederatedForeignKey, FederatedRelation
 from federated_foreign_key.models import GenericContentType
 
 
@@ -7,6 +7,7 @@ class Book(models.Model):
     """Sample model used for tests."""
 
     title = models.CharField(max_length=50)
+    references = FederatedRelation("Reference", related_query_name="book")
 
 
 class Reference(models.Model):
