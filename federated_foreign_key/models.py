@@ -1,8 +1,10 @@
 from collections import defaultdict
+from typing import Any, Dict, Optional, Sequence, Tuple, Type
 
 from django.conf import settings
 from django.apps import apps
 from django.db import models as django_models
+from django.db.models.options import Options
 
 PROJECT_SETTING_NAME = "FEDERATION_PROJECT_NAME"
 
@@ -12,36 +14,44 @@ def get_current_project_name():
     return getattr(settings, PROJECT_SETTING_NAME, "default")
 
 
-class GenericContentTypeManager(django_models.Manager):
+class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
     """Manager storing ``GenericContentType`` objects per project."""
 
     use_in_migrations = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._cache = {}
+        self._cache: Dict[str, Dict[Tuple[str, str, str] | int, "GenericContentType"]] = {}
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         self._cache.clear()
 
-    def create(self, *args, **kwargs):
+    def create(self, *args: Any, **kwargs: Any) -> "GenericContentType":
         obj = super().create(*args, **kwargs)
         self._add_to_cache(self.db, obj)
         return obj
 
-    def _add_to_cache(self, using, ct):
+    def _add_to_cache(self, using: str, ct: "GenericContentType") -> None:
+        """Store ``ct`` in the manager cache for the given database alias."""
         key = (ct.project, ct.app_label, ct.model)
         self._cache.setdefault(using, {})[key] = ct
         self._cache.setdefault(using, {})[ct.id] = ct
 
-    def _get_from_cache(self, opts, project):
+    def _get_from_cache(self, opts: Options, project: str) -> "GenericContentType":
+        """Return a cached ``GenericContentType`` for ``opts`` and ``project``."""
         key = (project, opts.app_label, opts.model_name)
         return self._cache[self.db][key]
 
-    def _get_opts(self, model, for_concrete_model):
+    def _get_opts(self, model: Type[django_models.Model], for_concrete_model: bool) -> Options:
+        """Return the ``Options`` object for ``model``."""
         return model._meta.concrete_model._meta if for_concrete_model else model._meta
 
-    def get_for_model(self, model, for_concrete_model=True, project=None):
+    def get_for_model(
+        self,
+        model: Type[django_models.Model],
+        for_concrete_model: bool = True,
+        project: Optional[str] = None,
+    ) -> "GenericContentType":
         if project is None:
             project = get_current_project_name()
         opts = self._get_opts(model, for_concrete_model)
@@ -63,12 +73,18 @@ class GenericContentTypeManager(django_models.Manager):
         self._add_to_cache(self.db, ct)
         return ct
 
-    def get_for_models(self, *model_list, for_concrete_models=True, project=None):
+    def get_for_models(
+        self,
+        *model_list: Type[django_models.Model],
+        for_concrete_models: bool = True,
+        project: Optional[str] = None,
+    ) -> Dict[Type[django_models.Model], "GenericContentType"]:
+        """Return ``GenericContentType`` objects for each model in ``model_list``."""
         if project is None:
             project = get_current_project_name()
-        results = {}
-        needed_models = defaultdict(set)
-        needed_opts = defaultdict(list)
+        results: Dict[Type[django_models.Model], "GenericContentType"] = {}
+        needed_models: Dict[str, set[str]] = defaultdict(set)
+        needed_opts: Dict[Tuple[str, str], list[Type[django_models.Model]]] = defaultdict(list)
         for model in model_list:
             opts = self._get_opts(model, for_concrete_models)
             try:
@@ -104,7 +120,8 @@ class GenericContentTypeManager(django_models.Manager):
                     results[model] = ct
         return results
 
-    def get_by_natural_key(self, *args):
+    def get_by_natural_key(self, *args: str) -> "GenericContentType":
+        """Return the content type identified by its natural key."""
         if len(args) == 2:
             project = get_current_project_name()
             app_label, model = args
@@ -118,7 +135,8 @@ class GenericContentTypeManager(django_models.Manager):
             self._add_to_cache(self.db, ct)
             return ct
 
-    def get_for_id(self, id):
+    def get_for_id(self, id: int) -> "GenericContentType":
+        """Return the content type with primary key ``id`` from the cache."""
         try:
             return self._cache[self.db][id]
         except KeyError:
@@ -141,24 +159,25 @@ class GenericContentType(django_models.Model):
             ("project", "app_label", "model"),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.app_labeled_name
 
     @property
-    def name(self):
+    def name(self) -> str:
         model = self.model_class()
         if not model:
             return self.model
         return str(model._meta.verbose_name)
 
     @property
-    def app_labeled_name(self):
+    def app_labeled_name(self) -> str:
         model = self.model_class()
         if not model:
             return self.model
         return f"{model._meta.app_config.verbose_name} | {model._meta.verbose_name}"
 
-    def model_class(self):
+    def model_class(self) -> Optional[Type[django_models.Model]]:
+        """Return the model class if available for the current project."""
         if self.project not in ("shared", get_current_project_name()):
             return None
         try:
@@ -166,17 +185,21 @@ class GenericContentType(django_models.Model):
         except LookupError:
             return None
 
-    def get_object_for_this_type(self, **kwargs):
+    def get_object_for_this_type(self, **kwargs: Any) -> django_models.Model:
+        """Return the object referenced by this content type."""
         model = self.model_class()
         if model is None:
             raise LookupError("Model not available in this project")
         return model._base_manager.get(**kwargs)
 
-    def get_all_objects_for_this_type(self, **kwargs):
+    def get_all_objects_for_this_type(
+        self, **kwargs: Any
+    ) -> django_models.QuerySet | Sequence[django_models.Model]:
+        """Return all objects referenced by this content type."""
         model = self.model_class()
         if model is None:
             return []
         return model._base_manager.filter(**kwargs)
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str, str, str]:
         return (self.project, self.app_label, self.model)
