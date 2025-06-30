@@ -8,6 +8,7 @@ from django.core import checks
 from django.db import models
 from django.test import SimpleTestCase, override_settings
 from django.test.utils import isolate_apps
+from django.utils.translation import gettext_lazy as _
 
 
 @isolate_apps("contenttypes_tests", attr_name="apps")
@@ -17,7 +18,9 @@ class GenericForeignKeyTests(SimpleTestCase):
     def test_missing_content_type_field(self):
         class TaggedItem(models.Model):
             # no content_type field
-            object_id = models.PositiveIntegerField()
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object = GenericForeignKey()
 
         expected = [
@@ -32,8 +35,12 @@ class GenericForeignKeyTests(SimpleTestCase):
 
     def test_invalid_content_type_field(self):
         class Model(models.Model):
-            content_type = models.IntegerField()  # should be ForeignKey
-            object_id = models.PositiveIntegerField()
+            content_type = models.IntegerField(
+                help_text=_("Should be a ForeignKey to GenericContentType."),
+            )  # should be ForeignKey
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object = GenericForeignKey("content_type", "object_id")
 
         self.assertEqual(
@@ -54,9 +61,13 @@ class GenericForeignKeyTests(SimpleTestCase):
     def test_content_type_field_pointing_to_wrong_model(self):
         class Model(models.Model):
             content_type = models.ForeignKey(
-                "self", models.CASCADE
+                "self",
+                models.CASCADE,
+                help_text=_("Should reference GenericContentType."),
             )  # should point to ContentType
-            object_id = models.PositiveIntegerField()
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object = GenericForeignKey("content_type", "object_id")
 
         self.assertEqual(
@@ -77,7 +88,11 @@ class GenericForeignKeyTests(SimpleTestCase):
 
     def test_missing_object_id_field(self):
         class TaggedItem(models.Model):
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the related object."),
+            )
             # missing object_id field
             content_object = GenericForeignKey()
 
@@ -95,8 +110,14 @@ class GenericForeignKeyTests(SimpleTestCase):
 
     def test_field_name_ending_with_underscore(self):
         class Model(models.Model):
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
-            object_id = models.PositiveIntegerField()
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the related object."),
+            )
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object_ = GenericForeignKey("content_type", "object_id")
 
         self.assertEqual(
@@ -130,19 +151,34 @@ class GenericForeignKeyTests(SimpleTestCase):
 class GenericRelationTests(SimpleTestCase):
     def test_valid_generic_relationship(self):
         class TaggedItem(models.Model):
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
-            object_id = models.PositiveIntegerField()
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the tagged object."),
+            )
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the tagged object."),
+            )
             content_object = GenericForeignKey()
 
         class Bookmark(models.Model):
-            tags = GenericRelation("TaggedItem")
+            tags = GenericRelation(
+                "TaggedItem",
+                help_text=_("Generic relation to TaggedItem."),
+            )
 
         self.assertEqual(Bookmark.tags.field.check(), [])
 
     def test_valid_generic_relationship_with_explicit_fields(self):
         class TaggedItem(models.Model):
-            custom_content_type = models.ForeignKey(ContentType, models.CASCADE)
-            custom_object_id = models.PositiveIntegerField()
+            custom_content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Custom content type field."),
+            )
+            custom_object_id = models.PositiveIntegerField(
+                help_text=_("Custom object identifier."),
+            )
             content_object = GenericForeignKey(
                 "custom_content_type", "custom_object_id"
             )
@@ -152,13 +188,17 @@ class GenericRelationTests(SimpleTestCase):
                 "TaggedItem",
                 content_type_field="custom_content_type",
                 object_id_field="custom_object_id",
+                help_text=_("Generic relation using explicit fields."),
             )
 
         self.assertEqual(Bookmark.tags.field.check(), [])
 
     def test_pointing_to_missing_model(self):
         class Model(models.Model):
-            rel = GenericRelation("MissingModel")
+            rel = GenericRelation(
+                "MissingModel",
+                help_text=_("Relation pointing to a missing model."),
+            )
 
         self.assertEqual(
             Model.rel.field.check(),
@@ -174,20 +214,38 @@ class GenericRelationTests(SimpleTestCase):
 
     def test_valid_self_referential_generic_relationship(self):
         class Model(models.Model):
-            rel = GenericRelation("Model")
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
-            object_id = models.PositiveIntegerField()
+            rel = GenericRelation(
+                "Model",
+                help_text=_("Self-referential generic relation."),
+            )
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the related object."),
+            )
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object = GenericForeignKey("content_type", "object_id")
 
         self.assertEqual(Model.rel.field.check(), [])
 
     def test_missing_generic_foreign_key(self):
         class TaggedItem(models.Model):
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
-            object_id = models.PositiveIntegerField()
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the related object."),
+            )
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
 
         class Bookmark(models.Model):
-            tags = GenericRelation("TaggedItem")
+            tags = GenericRelation(
+                "TaggedItem",
+                help_text=_("Relation to TaggedItem without a GenericForeignKey."),
+            )
 
         self.assertEqual(
             Bookmark.tags.field.check(),
@@ -208,15 +266,24 @@ class GenericRelationTests(SimpleTestCase):
             pass
 
         class SwappedModel(models.Model):
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
-            object_id = models.PositiveIntegerField()
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the related object."),
+            )
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object = GenericForeignKey()
 
             class Meta:
                 swappable = "TEST_SWAPPED_MODEL"
 
         class Model(models.Model):
-            rel = GenericRelation("SwappedModel")
+            rel = GenericRelation(
+                "SwappedModel",
+                help_text=_("Relation to a swapped model."),
+            )
 
         self.assertEqual(
             Model.rel.field.check(),
@@ -236,12 +303,21 @@ class GenericRelationTests(SimpleTestCase):
 
     def test_field_name_ending_with_underscore(self):
         class TaggedItem(models.Model):
-            content_type = models.ForeignKey(ContentType, models.CASCADE)
-            object_id = models.PositiveIntegerField()
+            content_type = models.ForeignKey(
+                ContentType,
+                models.CASCADE,
+                help_text=_("Content type of the related object."),
+            )
+            object_id = models.PositiveIntegerField(
+                help_text=_("Primary key of the related object."),
+            )
             content_object = GenericForeignKey()
 
         class InvalidBookmark(models.Model):
-            tags_ = GenericRelation("TaggedItem")
+            tags_ = GenericRelation(
+                "TaggedItem",
+                help_text=_("Relation with invalid field name."),
+            )
 
         self.assertEqual(
             InvalidBookmark.tags_.field.check(),
