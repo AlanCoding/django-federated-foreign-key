@@ -46,6 +46,26 @@ jobs:
       - name: Flake8
         run: flake8
 
+  mypy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+          pip install -e example_project
+      - name: Mypy
+        run: mypy --ignore-missing-imports federated_foreign_key
+
   tests:
     runs-on: ubuntu-latest
     strategy:
