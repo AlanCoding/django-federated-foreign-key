@@ -15,6 +15,28 @@ def test_post_migrate_creates_contenttype():
     assert ct.project == "project_a"
 
 
+def test_post_migrate_creates_contenttype_with_existing_remote():
+    """A content type is created even if another project already defined it."""
+    # Remove the content type created during migrations.
+    GenericContentType.objects.filter(
+        project="project_a", app_label="testapp", model="book"
+    ).delete()
+
+    # Simulate a content type created by a different project.
+    GenericContentType.objects.create(
+        project="project_b", app_label="testapp", model="book"
+    )
+
+    from django.apps import apps
+    from federated_foreign_key import management as contenttypes_management
+
+    app_config = apps.get_app_config("testapp")
+    contenttypes_management.create_generic_contenttypes(app_config, verbosity=0)
+
+    ct = GenericContentType.objects.get(project="project_a", app_label="testapp", model="book")
+    assert ct.project == "project_a"
+
+
 class GenericContentTypeTests(TestCase):
     def setUp(self):
         GenericContentType.objects.clear_cache()
