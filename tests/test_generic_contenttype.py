@@ -47,3 +47,35 @@ class GenericContentTypeTests(TestCase):
         ct = GenericContentType.objects.get_for_model(ModelCreatedOnTheFly)
         assert ct.app_label == "tests"
         assert ct.model == "modelcreatedonthefly"
+
+
+def test_get_object_for_this_type_remote():
+    """Remote objects should return a remote proxy."""
+    ct = GenericContentType.objects.create(
+        project="remote_proj",
+        app_label="testapp",
+        model="book",
+    )
+
+    obj = ct.get_object_for_this_type(pk=1)
+
+    from federated_foreign_key.fields import RemoteObject
+
+    assert isinstance(obj, RemoteObject)
+    assert obj.object_id == 1
+    assert obj.content_type == ct
+
+
+def test_get_all_objects_for_this_type_remote():
+    ct = GenericContentType.objects.create(
+        project="remote_proj2",
+        app_label="testapp",
+        model="book",
+    )
+
+    objs = ct.get_all_objects_for_this_type(pk__in=[1, 2])
+
+    from federated_foreign_key.fields import RemoteObject
+
+    assert [o.object_id for o in objs] == [1, 2]
+    assert all(isinstance(o, RemoteObject) for o in objs)

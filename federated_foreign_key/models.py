@@ -4,6 +4,7 @@ from django.conf import settings
 from django.apps import apps
 from django.db import models as django_models
 
+
 PROJECT_SETTING_NAME = "FEDERATION_PROJECT_NAME"
 
 
@@ -169,14 +170,32 @@ class GenericContentType(django_models.Model):
     def get_object_for_this_type(self, **kwargs):
         model = self.model_class()
         if model is None:
-            raise LookupError("Model not available in this project")
+            from .fields import get_remote_object_class
+            object_id = (
+                kwargs.get("pk")
+                or kwargs.get("id")
+                or kwargs.get("pk__exact")
+                or kwargs.get("id__exact")
+            )
+            if object_id is None:
+                raise LookupError("Model not available in this project")
+            return get_remote_object_class()(self, object_id)
         return model._base_manager.get(**kwargs)
 
     def get_all_objects_for_this_type(self, **kwargs):
         model = self.model_class()
         if model is None:
-            return []
-        return model._base_manager.filter(**kwargs)
+            from .fields import get_remote_object_class
+            ids = (
+                kwargs.get("pk__in")
+                or kwargs.get("id__in")
+                or (kwargs.get("pk") and [kwargs["pk"]])
+                or (kwargs.get("id") and [kwargs["id"]])
+            )
+            if not ids:
+                return []
+            return [get_remote_object_class()(self, obj_id) for obj_id in ids]
+        return list(model._base_manager.filter(**kwargs))
 
     def natural_key(self):
         return (self.project, self.app_label, self.model)
