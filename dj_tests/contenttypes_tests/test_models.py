@@ -8,6 +8,7 @@ from django.db import models
 from django.db.migrations.state import ModelState, ProjectState
 from django.test import TestCase, override_settings
 from django.test.utils import isolate_apps
+from django.utils.translation import gettext_lazy as _
 
 from .models import Author, ConcreteModel, FooWithUrl, ProxyModel
 
@@ -155,7 +156,9 @@ class ContentTypesTests(TestCase):
         """
 
         class ModelCreatedOnTheFly(models.Model):
-            name = models.CharField()
+            name = models.CharField(
+                help_text=_("Name for the dynamically created model."),
+            )
 
         ct = ContentType.objects.get_for_model(ModelCreatedOnTheFly)
         self.assertEqual(ct.app_label, "contenttypes_tests")

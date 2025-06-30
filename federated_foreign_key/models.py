@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Type
 from django.conf import settings
 from django.apps import apps
 from django.db import models as django_models
+from django.utils.translation import gettext_lazy as _
 from django.db.models.options import Options
 
 
@@ -149,9 +150,19 @@ class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
 class GenericContentType(django_models.Model):
     """Like Django's ``ContentType`` model but scoped by project."""
 
-    project = django_models.CharField(max_length=100, default=get_current_project_name)
-    app_label = django_models.CharField(max_length=100)
-    model = django_models.CharField(max_length=100)
+    project = django_models.CharField(
+        max_length=100,
+        default=get_current_project_name,
+        help_text=_("Project namespace used for federated lookups."),
+    )
+    app_label = django_models.CharField(
+        max_length=100,
+        help_text=_("Application label that defines the model."),
+    )
+    model = django_models.CharField(
+        max_length=100,
+        help_text=_("Name of the model referenced."),
+    )
 
     objects = GenericContentTypeManager()
 

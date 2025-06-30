@@ -3,6 +3,7 @@ from operator import attrgetter
 from django.db import models
 from django.test import SimpleTestCase, TestCase
 from django.test.utils import isolate_apps
+from django.utils.translation import gettext_lazy as _
 
 from .base_tests import BaseOrderWithRespectToTests
 from .models import Answer, Dimension, Entity, Post, Question
@@ -22,7 +23,11 @@ class OrderWithRespectToTests(SimpleTestCase):
                 app_label = "order_with_respect_to"
 
         class Foo(models.Model):
-            bar = models.ForeignKey(Bar, models.CASCADE)
+            bar = models.ForeignKey(
+                Bar,
+                models.CASCADE,
+                help_text=_("Related Bar instance used for ordering."),
+            )
             order = models.OrderWrt()
 
             class Meta:

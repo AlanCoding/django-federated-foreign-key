@@ -2,6 +2,7 @@ import pytest
 from django.db import models
 from django.test import TestCase
 from django.test.utils import isolate_apps
+from django.utils.translation import gettext_lazy as _
 
 from federated_foreign_key.models import GenericContentType
 from example_project.testapp.models import Book
@@ -39,7 +40,10 @@ class GenericContentTypeTests(TestCase):
     @isolate_apps("tests")
     def test_get_for_model_create_contenttype(self):
         class ModelCreatedOnTheFly(models.Model):
-            name = models.CharField(max_length=10)
+            name = models.CharField(
+                max_length=10,
+                help_text=_("Label for the temporary model instance."),
+            )
 
             class Meta:
                 app_label = "tests"
