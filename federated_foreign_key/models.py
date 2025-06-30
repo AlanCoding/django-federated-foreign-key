@@ -161,7 +161,10 @@ class GenericContentType(django_models.Model):
     )
     model = django_models.CharField(
         max_length=100,
-        help_text=_("Name of the model referenced."),
+        help_text=_(
+            "Model name in ``Model._meta.model_name`` format, e.g."
+            " 'JobTemplate' becomes 'jobtemplate'."
+        ),
     )
 
     objects = GenericContentTypeManager()
