@@ -157,13 +157,15 @@ class GenericContentType(django_models.Model):
     )
     app_label = django_models.CharField(
         max_length=100,
-        help_text=_("Application label that defines the model."),
+        help_text=_(
+            "Django app label where the referenced model is defined."
+        ),
     )
     model = django_models.CharField(
         max_length=100,
         help_text=_(
-            "Model name in ``Model._meta.model_name`` format, e.g."
-            " 'JobTemplate' becomes 'jobtemplate'."
+            "Name of the model in Django's ``Model._meta.model_name`` format. "
+            "For example ``JobTemplate`` becomes ``jobtemplate``."
         ),
     )
 
