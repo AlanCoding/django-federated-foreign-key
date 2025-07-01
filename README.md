@@ -53,6 +53,23 @@ class Reference(models.Model):
     content_object = FederatedForeignKey("content_type", "object_id")
 ```
 
+#### Referencing a remote object
+
+If the referenced item does not exist in the local database, `content_object`
+becomes a `RemoteObject` placeholder. `GenericContentType.model_class()`
+returns a stand‑in class that can be used for `isinstance` checks.
+
+```python
+remote_ct = GenericContentType.objects.create(
+    project="project_b",
+    app_label="testapp",
+    model="book",
+)
+cls = remote_ct.model_class()
+ref = Reference.objects.create(content_type=remote_ct, object_id=42)
+assert isinstance(ref.content_object, cls)
+```
+
 ### Development
 
 Install development requirements and run linting and tests:
