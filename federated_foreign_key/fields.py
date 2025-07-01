@@ -37,6 +37,23 @@ def get_remote_object_class():
     return import_string(path)
 
 
+_REMOTE_STANDIN_CACHE = {}
+
+
+def get_remote_standin_class(content_type: GenericContentType):
+    """Return a RemoteObject subclass unique to ``content_type``."""
+    key = (content_type.project, content_type.app_label, content_type.model)
+    standin = _REMOTE_STANDIN_CACHE.get(key)
+    if standin is None:
+        base = get_remote_object_class()
+        name = (
+            f"Remote[{content_type.project}:{content_type.app_label}.{content_type.model}]"
+        )
+        standin = type(name, (base,), {})
+        _REMOTE_STANDIN_CACHE[key] = standin
+    return standin
+
+
 class RemoteObject:
     """Placeholder for objects that live in another project."""
 
@@ -141,7 +158,7 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                 except (ObjectDoesNotExist, LookupError):
                     rel_obj = None
             else:
-                rel_obj = get_remote_object_class()(ct, pk_val)
+                rel_obj = ct.get_object_for_this_type(pk=pk_val)
         self.set_cached_value(instance, rel_obj)
         return rel_obj
 

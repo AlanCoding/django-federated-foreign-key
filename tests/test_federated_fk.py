@@ -37,6 +37,7 @@ def test_remote_reference():
     from federated_foreign_key.fields import RemoteObject
 
     assert isinstance(obj, RemoteObject)
+    assert isinstance(obj, ct.model_class())
     assert obj.object_id == 1
     assert obj.content_type.project == remote_project
 
@@ -54,6 +55,7 @@ def test_custom_remote_object(settings):
     obj = ref.content_object
 
     assert isinstance(obj, ExtraRemoteObject)
+    assert isinstance(obj, ct.model_class())
     assert obj.extra() == remote_project
 
 

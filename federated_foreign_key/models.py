@@ -182,21 +182,22 @@ class GenericContentType(django_models.Model):
     @property
     def name(self) -> str:
         model = self.model_class()
-        if not model:
+        if not model or not hasattr(model, "_meta"):
             return self.model
         return str(model._meta.verbose_name)
 
     @property
     def app_labeled_name(self) -> str:
         model = self.model_class()
-        if not model:
+        if not model or not hasattr(model, "_meta"):
             return self.model
         return f"{model._meta.app_config.verbose_name} | {model._meta.verbose_name}"
 
     def model_class(self) -> Optional[Type[django_models.Model]]:
-        """Return the model class if available for the current project."""
+        """Return the model class or a remote stand-in."""
         if self.project not in ("shared", get_current_project_name()):
-            return None
+            from .fields import get_remote_standin_class
+            return get_remote_standin_class(self)
         try:
             return apps.get_model(self.app_label, self.model)
         except LookupError:
@@ -215,7 +216,20 @@ class GenericContentType(django_models.Model):
             )
             if object_id is None:
                 raise LookupError("Model not available in this project")
-            return get_remote_object_class()(self, object_id)
+            remote_base = get_remote_object_class()
+            return remote_base(self, object_id)
+        from .fields import get_remote_object_class
+        remote_base = get_remote_object_class()
+        if issubclass(model, remote_base):
+            object_id = (
+                kwargs.get("pk")
+                or kwargs.get("id")
+                or kwargs.get("pk__exact")
+                or kwargs.get("id__exact")
+            )
+            if object_id is None:
+                raise LookupError("Model not available in this project")
+            return model(self, object_id)
         return model._base_manager.get(**kwargs)
 
     def get_all_objects_for_this_type(
@@ -233,7 +247,20 @@ class GenericContentType(django_models.Model):
             )
             if not ids:
                 return []
-            return [get_remote_object_class()(self, obj_id) for obj_id in ids]
+            remote_base = get_remote_object_class()
+            return [remote_base(self, obj_id) for obj_id in ids]
+        from .fields import get_remote_object_class
+        remote_base = get_remote_object_class()
+        if issubclass(model, remote_base):
+            ids = (
+                kwargs.get("pk__in")
+                or kwargs.get("id__in")
+                or (kwargs.get("pk") and [kwargs["pk"]])
+                or (kwargs.get("id") and [kwargs["id"]])
+            )
+            if not ids:
+                return []
+            return [model(self, obj_id) for obj_id in ids]
         return list(model._base_manager.filter(**kwargs))
 
     def natural_key(self) -> Tuple[str, str, str]:

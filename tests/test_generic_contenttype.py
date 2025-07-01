@@ -105,3 +105,20 @@ def test_get_all_objects_for_this_type_remote():
 
     assert [o.object_id for o in objs] == [1, 2]
     assert all(isinstance(o, RemoteObject) for o in objs)
+
+
+def test_model_class_remote_returns_standin():
+    ct = GenericContentType.objects.create(
+        project="remote_proj3",
+        app_label="testapp",
+        model="book",
+    )
+
+    cls1 = ct.model_class()
+    cls2 = ct.model_class()
+    from federated_foreign_key.fields import RemoteObject
+
+    assert issubclass(cls1, RemoteObject)
+    assert cls1 is cls2
+    obj = ct.get_object_for_this_type(pk=5)
+    assert isinstance(obj, cls1)
