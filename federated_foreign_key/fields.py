@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import itertools
 
@@ -35,6 +37,33 @@ def get_remote_object_class():
         "federated_foreign_key.fields.RemoteObject",
     )
     return import_string(path)
+
+
+_REMOTE_STANDIN_CACHE: dict[tuple[str, str, str], type[RemoteObject]] = {}
+
+
+def get_remote_standin_class(content_type: GenericContentType):
+    """Return a RemoteObject subclass unique to ``content_type``."""
+    key = (content_type.project, content_type.app_label, content_type.model)
+    standin = _REMOTE_STANDIN_CACHE.get(key)
+    if standin is None:
+        base = get_remote_object_class()
+        name = (
+            f"Remote[{content_type.project}:{content_type.app_label}.{content_type.model}]"
+        )
+
+        class StandinMeta:
+            def __init__(self, ct: GenericContentType):
+                self.model_name = ct.model
+                self.app_label = ct.app_label
+
+        standin = type(
+            name,
+            (base,),
+            {"_meta": StandinMeta(content_type)},
+        )
+        _REMOTE_STANDIN_CACHE[key] = standin
+    return standin
 
 
 class RemoteObject:
@@ -141,7 +170,7 @@ class FederatedForeignKey(DjangoGenericForeignKey):
                 except (ObjectDoesNotExist, LookupError):
                     rel_obj = None
             else:
-                rel_obj = get_remote_object_class()(ct, pk_val)
+                rel_obj = ct.get_object_for_this_type(pk=pk_val)
         self.set_cached_value(instance, rel_obj)
         return rel_obj
 
