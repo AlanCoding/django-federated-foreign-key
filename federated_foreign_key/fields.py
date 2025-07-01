@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import itertools
 
@@ -37,7 +39,7 @@ def get_remote_object_class():
     return import_string(path)
 
 
-_REMOTE_STANDIN_CACHE = {}
+_REMOTE_STANDIN_CACHE: dict[tuple[str, str, str], type[RemoteObject]] = {}
 
 
 def get_remote_standin_class(content_type: GenericContentType):

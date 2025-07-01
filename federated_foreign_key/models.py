@@ -216,17 +216,7 @@ class GenericContentType(django_models.Model):
         """Return the object referenced by this content type."""
         model = self.model_class()
         if model is None:
-            from .fields import get_remote_object_class
-            object_id = (
-                kwargs.get("pk")
-                or kwargs.get("id")
-                or kwargs.get("pk__exact")
-                or kwargs.get("id__exact")
-            )
-            if object_id is None:
-                raise LookupError("Model not available in this project")
-            remote_base = get_remote_object_class()
-            return remote_base(self, object_id)
+            raise LookupError("Model not available in this project")
         from .fields import get_remote_object_class
         remote_base = get_remote_object_class()
         if issubclass(model, remote_base):
@@ -247,17 +237,7 @@ class GenericContentType(django_models.Model):
         """Return all objects referenced by this content type."""
         model = self.model_class()
         if model is None:
-            from .fields import get_remote_object_class
-            ids = (
-                kwargs.get("pk__in")
-                or kwargs.get("id__in")
-                or (kwargs.get("pk") and [kwargs["pk"]])
-                or (kwargs.get("id") and [kwargs["id"]])
-            )
-            if not ids:
-                return []
-            remote_base = get_remote_object_class()
-            return [remote_base(self, obj_id) for obj_id in ids]
+            raise LookupError("Model not available in this project")
         from .fields import get_remote_object_class
         remote_base = get_remote_object_class()
         if issubclass(model, remote_base):
