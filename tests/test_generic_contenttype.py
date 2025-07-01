@@ -119,6 +119,8 @@ def test_model_class_remote_returns_standin():
     from federated_foreign_key.fields import RemoteObject
 
     assert issubclass(cls1, RemoteObject)
+    assert cls1._meta.model_name == "book"
+    assert cls1._meta.app_label == "testapp"
     assert cls1 is cls2
     obj = ct.get_object_for_this_type(pk=5)
     assert isinstance(obj, cls1)

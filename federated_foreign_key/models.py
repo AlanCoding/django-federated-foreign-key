@@ -182,14 +182,23 @@ class GenericContentType(django_models.Model):
     @property
     def name(self) -> str:
         model = self.model_class()
-        if not model or not hasattr(model, "_meta"):
+        if (
+            not model
+            or not hasattr(model, "_meta")
+            or not hasattr(model._meta, "verbose_name")
+        ):
             return self.model
         return str(model._meta.verbose_name)
 
     @property
     def app_labeled_name(self) -> str:
         model = self.model_class()
-        if not model or not hasattr(model, "_meta"):
+        if (
+            not model
+            or not hasattr(model, "_meta")
+            or not hasattr(model._meta, "app_config")
+            or not hasattr(model._meta, "verbose_name")
+        ):
             return self.model
         return f"{model._meta.app_config.verbose_name} | {model._meta.verbose_name}"
 
