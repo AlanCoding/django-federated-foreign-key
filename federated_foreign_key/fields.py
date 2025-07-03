@@ -57,6 +57,7 @@ def get_remote_standin_class(content_type: GenericContentType):
                 self.model_name = ct.model
                 self.app_label = ct.app_label
                 self.service = ct.project
+
                 class PK:
                     def get_prep_value(self, value):
                         return int(value)

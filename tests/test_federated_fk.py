@@ -129,6 +129,7 @@ def test_prefetch_remote_content_object_twice():
     assert first.object_id == 1
     assert first is second
 
+
 def test_prefetch_related_objects():
     """Prefetch ``content_object`` for local references only."""
     books = [Book.objects.create(title=f"Prefetch {i}") for i in range(5)]
