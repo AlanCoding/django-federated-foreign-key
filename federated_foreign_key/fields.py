@@ -96,6 +96,17 @@ class RemoteObject:
     def __repr__(self):
         return f"<RemoteObject {self.content_type} id={self.object_id}>"
 
+    def __eq__(self, other):
+        if not isinstance(other, RemoteObject):
+            return NotImplemented
+        return (
+            self.content_type == other.content_type
+            and self.object_id == other.object_id
+        )
+
+    def __hash__(self):
+        return hash((self.content_type, self.object_id))
+
 
 class FederatedForeignKey(DjangoGenericForeignKey):
     """A GenericForeignKey variant aware of project boundaries."""
