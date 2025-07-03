@@ -124,3 +124,28 @@ def test_model_class_remote_returns_standin():
     assert cls1 is cls2
     obj = ct.get_object_for_this_type(pk=5)
     assert isinstance(obj, cls1)
+
+
+def test_get_for_model_remote():
+    ct = GenericContentType.objects.create(
+        project="remote_proj4",
+        app_label="testapp",
+        model="book",
+    )
+
+    cls = ct.model_class()
+    assert cls._meta.service == "remote_proj4"
+
+    fetched = GenericContentType.objects.get_for_model(cls)
+    assert fetched == ct
+
+
+def test_remote_class_get_content_type():
+    ct = GenericContentType.objects.create(
+        project="remote_proj5",
+        app_label="testapp",
+        model="book",
+    )
+
+    cls = ct.model_class()
+    assert cls.get_content_type() == ct
