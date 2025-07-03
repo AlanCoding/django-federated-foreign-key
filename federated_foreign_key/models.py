@@ -159,7 +159,6 @@ class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
             return ct
 
 
-
 class GenericContentType(django_models.Model):
     """Like Django's ``ContentType`` model but scoped by project."""
 
