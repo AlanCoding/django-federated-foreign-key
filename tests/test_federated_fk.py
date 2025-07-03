@@ -2,6 +2,9 @@ import pytest
 
 from federated_foreign_key.models import GenericContentType
 from federated_foreign_key.fields import RemoteObject
+from federated_foreign_key.prefetch import FederatedPrefetch
+from django.db import models, connection
+from django.test.utils import CaptureQueriesContext
 from example_project.testapp.models import Book, Reference
 
 pytestmark = pytest.mark.django_db
@@ -105,3 +108,33 @@ def test_reverse_manager_create_and_get():
     updated, created = book.references.update_or_create(pk=ref.pk)
     assert not created
     assert updated == ref
+
+
+def test_prefetch_related_objects():
+    """Prefetch ``content_object`` for local references only."""
+    books = [Book.objects.create(title=f"Prefetch {i}") for i in range(5)]
+    ct_local = GenericContentType.objects.get_for_model(Book)
+    local_refs = [
+        Reference.objects.create(content_type=ct_local, object_id=b.pk)
+        for b in books
+    ]
+
+    ct_remote = GenericContentType.objects.create(
+        project="project_remote",
+        app_label="testapp",
+        model="book",
+    )
+    remote_ref = Reference.objects.create(content_type=ct_remote, object_id=99)
+
+    models.prefetch_related_objects(
+        local_refs,
+        FederatedPrefetch("content_object", [Book.objects.all()]),
+    )
+
+    with CaptureQueriesContext(connection) as ctx:
+        local_objs = [r.content_object for r in local_refs]
+        remote_obj = remote_ref.content_object
+    assert len(ctx.captured_queries) == 0
+    assert local_objs == books
+    assert isinstance(remote_obj, RemoteObject)
+    assert remote_obj.object_id == 99
