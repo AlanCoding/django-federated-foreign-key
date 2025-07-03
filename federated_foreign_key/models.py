@@ -158,9 +158,6 @@ class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
             self._add_to_cache(self.db, ct)
             return ct
 
-    def get_ct_from_type(self, model: type) -> "GenericContentType":
-        """Return the ``GenericContentType`` matching ``model``."""
-        return self.get_for_model(model)
 
 
 class GenericContentType(django_models.Model):
