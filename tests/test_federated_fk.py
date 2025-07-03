@@ -110,6 +110,26 @@ def test_reverse_manager_create_and_get():
     assert updated == ref
 
 
+def test_prefetch_remote_content_object_twice():
+    ct = GenericContentType.objects.create(
+        project="remote_proj_twice",
+        app_label="testapp",
+        model="book",
+    )
+    Reference.objects.create(content_type=ct, object_id=1)
+
+    qs = Reference.objects.prefetch_related("content_object", "content_object")
+    result = list(qs)[0]
+    first = result.content_object
+    second = result.content_object
+
+    from federated_foreign_key.fields import RemoteObject
+
+    assert isinstance(first, RemoteObject)
+    assert first.object_id == 1
+    assert first is second
+
+
 def test_prefetch_related_objects():
     """Prefetch ``content_object`` for local references only."""
     books = [Book.objects.create(title=f"Prefetch {i}") for i in range(5)]

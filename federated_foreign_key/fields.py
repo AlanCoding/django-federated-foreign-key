@@ -58,6 +58,15 @@ def get_remote_standin_class(content_type: GenericContentType):
                 self.app_label = ct.app_label
                 self.service = ct.project
 
+                class PK:
+                    def get_prep_value(self, value):
+                        return int(value)
+
+                    def to_python(self, value):
+                        return int(value)
+
+                self.pk = PK()
+
         standin = type(
             name,
             (base,),
@@ -78,6 +87,11 @@ class RemoteObject:
     def __init__(self, content_type, object_id):
         self.content_type = content_type
         self.object_id = object_id
+
+    @property
+    def pk(self):
+        """Alias to :attr:`object_id` for compatibility with Django."""
+        return self.object_id
 
     def __repr__(self):
         return f"<RemoteObject {self.content_type} id={self.object_id}>"
@@ -162,8 +176,13 @@ class FederatedForeignKey(DjangoGenericForeignKey):
         if rel_obj is None and self.is_cached(instance):
             return rel_obj
         if rel_obj is not None:
-            ct_match = ct_id == self.get_content_type(obj=rel_obj).id
-            pk_match = ct_match and rel_obj.pk == pk_val
+            if hasattr(rel_obj, "content_type"):
+                rel_ct = rel_obj.content_type
+            else:
+                rel_ct = self.get_content_type(obj=rel_obj)
+            rel_pk = getattr(rel_obj, "pk", getattr(rel_obj, "object_id", None))
+            ct_match = ct_id == rel_ct.id
+            pk_match = ct_match and rel_pk == pk_val
             if pk_match:
                 return rel_obj
             else:
