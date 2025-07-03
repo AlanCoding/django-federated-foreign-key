@@ -56,11 +56,17 @@ def get_remote_standin_class(content_type: GenericContentType):
             def __init__(self, ct: GenericContentType):
                 self.model_name = ct.model
                 self.app_label = ct.app_label
+                self.service = ct.project
 
         standin = type(
             name,
             (base,),
-            {"_meta": StandinMeta(content_type)},
+            {
+                "_meta": StandinMeta(content_type),
+                "get_content_type": classmethod(
+                    lambda cls: GenericContentType.objects.get_for_model(cls)
+                ),
+            },
         )
         _REMOTE_STANDIN_CACHE[key] = standin
     return standin

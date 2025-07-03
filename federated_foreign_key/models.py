@@ -46,7 +46,10 @@ class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
 
     def _get_opts(self, model: Type[django_models.Model], for_concrete_model: bool) -> Options:
         """Return the ``Options`` object for ``model``."""
-        return model._meta.concrete_model._meta if for_concrete_model else model._meta
+        try:
+            return model._meta.concrete_model._meta if for_concrete_model else model._meta
+        except AttributeError:
+            return model._meta
 
     def get_for_model(
         self,
@@ -54,9 +57,18 @@ class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
         for_concrete_model: bool = True,
         project: Optional[str] = None,
     ) -> "GenericContentType":
-        if project is None:
-            project = get_current_project_name()
-        opts = self._get_opts(model, for_concrete_model)
+        from .fields import get_remote_object_class
+
+        remote_base = get_remote_object_class()
+        model_cls = model if isinstance(model, type) else model.__class__
+        if issubclass(model_cls, remote_base) and not issubclass(model_cls, django_models.Model):
+            if project is None:
+                project = getattr(model_cls._meta, "service", get_current_project_name())
+            opts = model_cls._meta
+        else:
+            if project is None:
+                project = get_current_project_name()
+            opts = self._get_opts(model_cls, for_concrete_model)
         try:
             return self._get_from_cache(opts, project)
         except KeyError:
@@ -145,6 +157,10 @@ class GenericContentTypeManager(django_models.Manager["GenericContentType"]):
             ct = self.get(pk=id)
             self._add_to_cache(self.db, ct)
             return ct
+
+    def get_ct_from_type(self, model: type) -> "GenericContentType":
+        """Return the ``GenericContentType`` matching ``model``."""
+        return self.get_for_model(model)
 
 
 class GenericContentType(django_models.Model):
