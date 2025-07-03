@@ -158,3 +158,21 @@ def test_prefetch_related_objects():
     assert local_objs == books
     assert isinstance(remote_obj, RemoteObject)
     assert remote_obj.object_id == 99
+
+
+def test_remote_object_hashing():
+    """Remote objects referencing the same item should hash equally."""
+    ct = GenericContentType.objects.create(
+        project="hash_proj",
+        app_label="testapp",
+        model="book",
+    )
+    refs = [
+        Reference.objects.create(content_type=ct, object_id=7)
+        for _ in range(5)
+    ]
+    objs = [r.content_object for r in refs]
+
+    # objects should compare equal and condense to a single entry in a set
+    assert len(set(objs)) == 1
+    assert all(o == objs[0] for o in objs)
